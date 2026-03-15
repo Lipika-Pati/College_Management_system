@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import api from "../../utils/api";
+import ConfirmSaveModal from "./ConfirmSaveModal";
 
 const StudentProfile = ({ student, isNew, onClose, onUpdated }) => {
     const BASE_URL = api.defaults.baseURL;
@@ -11,6 +13,8 @@ const StudentProfile = ({ student, isNew, onClose, onUpdated }) => {
     const [semOptions, setSemOptions] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
 
     const fullNameInitial = student?.firstname
         ? `${student.firstname} ${student.lastname || ""}`.trim()
@@ -242,7 +246,32 @@ const StudentProfile = ({ student, isNew, onClose, onUpdated }) => {
 
                         <Input label="Optional Subject" name="optionalsubject" value={form.optionalsubject} onChange={handleChange} />
                         <Input type="date" label="Admission Date" name="admissiondate" value={form.admissiondate} onChange={handleChange} />
-                        <Input type="password" label="Password (Leave blank = DOB)" name="password" value={form.password} onChange={handleChange} />
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs text-gray-500 dark:text-gray-400">
+                                Password (Leave blank = DOB)
+                            </label>
+
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={form.password}
+                                    onChange={handleChange}
+                                    className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 px-3 py-2 pr-10 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500 transition w-full"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowPassword(!showPassword);
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 hover:text-gray-700"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -255,13 +284,28 @@ const StudentProfile = ({ student, isNew, onClose, onUpdated }) => {
                     </button>
 
                     <button
-                        onClick={handleSave}
+                        onClick={() => setShowSaveModal(true)}
                         className="w-full sm:w-auto px-6 py-2 bg-gray-900 text-white rounded-md text-sm hover:bg-black transition"
                     >
                         {isNew ? "Create Student" : "Save Changes"}
                     </button>
                 </div>
             </div>
+            <ConfirmSaveModal
+                show={showSaveModal}
+                title={isNew ? "Confirm Student Creation" : "Confirm Student Update"}
+                message={
+                    isNew
+                        ? "Are you sure you want to create this student?"
+                        : "Are you sure you want to save these changes?"
+                }
+                confirmText={isNew ? "Create" : "Save"}
+                onCancel={() => setShowSaveModal(false)}
+                onConfirm={async () => {
+                    await handleSave();
+                    setShowSaveModal(false);
+                }}
+            />
         </div>
     );
 };

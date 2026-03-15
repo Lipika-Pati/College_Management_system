@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import api from "../../utils/api";
+import ConfirmSaveModal from "./ConfirmSaveModal";
 
 const AdminProfile = () => {
     const token = localStorage.getItem("token");
@@ -222,6 +224,8 @@ const EditDetailsModal = ({ admin, token, onClose }) => {
     const [preview, setPreview] = useState(
         admin.logo ? `${api.defaults.baseURL}${admin.logo}` : null
     );
+    const [showPassword, setShowPassword] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -317,17 +321,53 @@ const EditDetailsModal = ({ admin, token, onClose }) => {
                     />
                 </div>
 
-                <StyledInput type="password" label="New Password" name="password" value={form.password} onChange={handleChange} />
+                <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        New Password
+                    </label>
+
+                    <div className="relative">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            value={form.password}
+                            onChange={handleChange}
+                            className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500 transition"
+                        />
+
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowPassword(!showPassword);
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 hover:text-gray-700"
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="flex justify-end mt-6">
                 <button
-                    onClick={handleSubmit}
+                    onClick={() => setShowSaveModal(true)}
                     className="px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
                 >
                     Update Details
                 </button>
             </div>
+            <ConfirmSaveModal
+                show={showSaveModal}
+                title="Confirm Profile Update"
+                message="Are you sure you want to update the admin profile?"
+                confirmText="Update"
+                onCancel={() => setShowSaveModal(false)}
+                onConfirm={async () => {
+                    await handleSubmit();
+                    setShowSaveModal(false);
+                }}
+            />
         </ModalWrapper>
     );
 };
@@ -335,6 +375,7 @@ const EditDetailsModal = ({ admin, token, onClose }) => {
 /* ---------------- Edit Links Modal ---------------- */
 
 const EditLinksModal = ({ admin, token, onClose }) => {
+    const [showSaveModal, setShowSaveModal] = useState(false);
     const [form, setForm] = useState({
         facebook: admin.facebook || "",
         instagram: admin.instagram || "",
@@ -380,12 +421,23 @@ const EditLinksModal = ({ admin, token, onClose }) => {
 
             <div className="flex justify-end mt-6">
                 <button
-                    onClick={handleSubmit}
+                    onClick={() => setShowSaveModal(true)}
                     className="px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
                 >
                     Update Links
                 </button>
             </div>
+            <ConfirmSaveModal
+                show={showSaveModal}
+                title="Confirm Profile Update"
+                message="Are you sure you want to update the admin profile?"
+                confirmText="Update"
+                onCancel={() => setShowSaveModal(false)}
+                onConfirm={async () => {
+                    await handleSubmit();
+                    setShowSaveModal(false);
+                }}
+            />
         </ModalWrapper>
     );
 };

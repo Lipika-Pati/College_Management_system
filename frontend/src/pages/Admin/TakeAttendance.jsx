@@ -167,6 +167,11 @@ const TakeAttendance = () => {
             setError("Failed to save attendance.");
         }
     };
+    const isFormReady =
+        selectedCourse &&
+        selectedSem &&
+        selectedSubject &&
+        selectedDate;
 
     return (
         <div className="space-y-10">
@@ -237,7 +242,8 @@ const TakeAttendance = () => {
             </div>
 
             {/* TABLE */}
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
+            {isFormReady && (
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
                 <div className="w-full overflow-x-auto">
                     <table className="w-full text-xs sm:text-sm text-left">
                         <thead className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-xs tracking-wide">
@@ -282,13 +288,19 @@ const TakeAttendance = () => {
 
                 {/* FOOTER BUTTON MATCHING FACULTY STYLE */}
                 <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end">
-                    <button
-                        onClick={() => setShowSaveModal(true)}
-                        className="w-full sm:w-auto px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition">
-                        Save Attendance
-                    </button>
+                    {isFormReady && (
+                        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end">
+                            <button
+                                onClick={() => setShowSaveModal(true)}
+                                className="w-full sm:w-auto px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition">
+                                Save Attendance
+                            </button>
+                        </div>
+                    )}
                 </div>
+
             </div>
+            )}
 
             <ConfirmSaveModal
                 show={showSaveModal}

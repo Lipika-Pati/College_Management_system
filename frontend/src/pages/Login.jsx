@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Eye, EyeOff } from "lucide-react";
 import api from "../utils/api";
 
 const Login = () => {
@@ -14,6 +14,7 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem("theme");
@@ -35,6 +36,18 @@ const Login = () => {
 
         localStorage.setItem("theme", theme);
     }, [theme]);
+
+    useEffect(() => {
+        const hidePassword = () => {
+            setShowPassword(false);
+        };
+
+        document.addEventListener("click", hidePassword);
+
+        return () => {
+            document.removeEventListener("click", hidePassword);
+        };
+    }, []);
 
     const toggleTheme = () => {
         setTheme((prev) => (prev === "dark" ? "light" : "dark"));
@@ -171,14 +184,28 @@ const Login = () => {
                         <label className="block mb-2 text-sm text-gray-600 dark:text-gray-300">
                             Password
                         </label>
-                        <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-400 outline-none transition"
-                            placeholder="Enter password"
-                        />
+
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-2 pr-10 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-400 outline-none transition"
+                                placeholder="Enter password"
+                            />
+
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowPassword(!showPassword);
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-300 hover:text-gray-700"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
                     </div>
 
                     <button

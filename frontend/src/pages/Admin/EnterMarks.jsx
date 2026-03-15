@@ -260,6 +260,11 @@ const EnterMarks = () => {
         }
 
     };
+    const isFormComplete =
+        selectedCourse &&
+        selectedSem &&
+        selectedSubject &&
+        students.length > 0;
 
     return (
         <div className="space-y-10">
@@ -442,7 +447,12 @@ const EnterMarks = () => {
 
                         <button
                             onClick={() => setShowSaveModal(true)}
-                            className="w-full sm:w-auto px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
+                            disabled={!isFormComplete}
+                            className={`w-full sm:w-auto px-4 py-2 text-sm rounded-md transition
+                                ${isFormComplete
+                                ? "bg-gray-900 text-white hover:bg-black"
+                                : "bg-gray-300 text-gray-500 cursor-not-allowed"}
+                            `}
                         >
                             Save Marks
                         </button>
