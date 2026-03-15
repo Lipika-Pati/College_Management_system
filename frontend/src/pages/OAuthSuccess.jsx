@@ -1,37 +1,43 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 
 const OAuthSuccess = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-
-        const token = params.get("token");
         const role = params.get("role");
 
-        console.log("OAuthSuccess params:", token, role);
-
-        if (!token || !role) {
+        if (!role) {
             navigate("/", { replace: true });
             return;
         }
 
-        // Save auth data
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", role);
+        // get token from backend cookie
+        api.get("/api/auth/session")
+            .then((res) => {
+                const token = res.data.token;
 
-        // Redirect based on role
-        if (role === "admin") {
-            navigate("/admin/dashboard", { replace: true });
-        } else if (role === "faculty") {
-            navigate("/faculty/dashboard", { replace: true });
-        } else if (role === "student") {
-            navigate("/student/dashboard", { replace: true });
-        } else {
-            // fallback
-            navigate("/", { replace: true });
-        }
+                localStorage.setItem("token", token);
+                localStorage.setItem("role", role);
+
+                if (role === "admin") {
+                    navigate("/admin/dashboard", { replace: true });
+                }
+                else if (role === "faculty") {
+                    navigate("/faculty/dashboard", { replace: true });
+                }
+                else if (role === "student") {
+                    navigate("/student/dashboard", { replace: true });
+                }
+                else {
+                    navigate("/", { replace: true });
+                }
+            })
+            .catch(() => {
+                navigate("/", { replace: true });
+            });
 
     }, [navigate]);
 

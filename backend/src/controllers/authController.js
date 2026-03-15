@@ -266,8 +266,6 @@ exports.googleRedirect = (req, res) => {
 
 exports.googleCallback = async (req, res) => {
 
-    console.log("Google callback reached");
-
     try {
 
         const { code } = req.query;
@@ -374,12 +372,14 @@ exports.googleCallback = async (req, res) => {
 
         /* ===== Redirect to frontend ===== */
 
-        const redirectUrl =
-            `${process.env.FRONTEND_URL}/oauth-success?token=${token}&role=${role}`;
+        res.cookie("auth_token", token, {
+            httpOnly: true,
+            secure: false, // true in production with HTTPS
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000
+        });
 
-        console.log("Redirecting to frontend:", redirectUrl);
-
-        res.redirect(redirectUrl);
+        res.redirect(`${process.env.FRONTEND_URL}/oauth-success?role=${role}`);
 
     } catch (error) {
 
