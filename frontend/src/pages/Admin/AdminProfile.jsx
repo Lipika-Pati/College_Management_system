@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import api from "../../utils/api";
+import ConfirmSaveModal from "./ConfirmSaveModal";
 
 const AdminProfile = () => {
     const token = localStorage.getItem("token");
@@ -224,6 +225,7 @@ const EditDetailsModal = ({ admin, token, onClose }) => {
         admin.logo ? `${api.defaults.baseURL}${admin.logo}` : null
     );
     const [showPassword, setShowPassword] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -349,12 +351,23 @@ const EditDetailsModal = ({ admin, token, onClose }) => {
 
             <div className="flex justify-end mt-6">
                 <button
-                    onClick={handleSubmit}
+                    onClick={() => setShowSaveModal(true)}
                     className="px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
                 >
                     Update Details
                 </button>
             </div>
+            <ConfirmSaveModal
+                show={showSaveModal}
+                title="Confirm Profile Update"
+                message="Are you sure you want to update the admin profile?"
+                confirmText="Update"
+                onCancel={() => setShowSaveModal(false)}
+                onConfirm={async () => {
+                    await handleSubmit();
+                    setShowSaveModal(false);
+                }}
+            />
         </ModalWrapper>
     );
 };
@@ -362,6 +375,7 @@ const EditDetailsModal = ({ admin, token, onClose }) => {
 /* ---------------- Edit Links Modal ---------------- */
 
 const EditLinksModal = ({ admin, token, onClose }) => {
+    const [showSaveModal, setShowSaveModal] = useState(false);
     const [form, setForm] = useState({
         facebook: admin.facebook || "",
         instagram: admin.instagram || "",
@@ -407,12 +421,23 @@ const EditLinksModal = ({ admin, token, onClose }) => {
 
             <div className="flex justify-end mt-6">
                 <button
-                    onClick={handleSubmit}
+                    onClick={() => setShowSaveModal(true)}
                     className="px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
                 >
                     Update Links
                 </button>
             </div>
+            <ConfirmSaveModal
+                show={showSaveModal}
+                title="Confirm Profile Update"
+                message="Are you sure you want to update the admin profile?"
+                confirmText="Update"
+                onCancel={() => setShowSaveModal(false)}
+                onConfirm={async () => {
+                    await handleSubmit();
+                    setShowSaveModal(false);
+                }}
+            />
         </ModalWrapper>
     );
 };
