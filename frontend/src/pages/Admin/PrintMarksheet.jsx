@@ -287,30 +287,38 @@ const PrintMarksheet = () => {
             {/* MARKSHEET */}
             {marksheet && (
 
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4 md:p-6">
 
-                    <div className="flex justify-end mb-6">
-
+                    <div className="flex justify-end mb-4">
                         <button
                             onClick={downloadPDF}
                             className="px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
                         >
                             Download PDF
                         </button>
-
                     </div>
 
-                    <MarksheetLayout
-                        marksheet={marksheet}
-                        semLabel={semLabel}
-                        selectedSem={selectedSem}
-                        marksheetCode={marksheetCode}
-                        verificationUrl={verificationUrl}
-                        summary={summary}
-                        hash={hash}
-                        courseDisplay={courseDisplay}
-                        getGrade={getGrade}
-                    />
+                    {/* Scroll container so mobile doesn't break layout */}
+                    <div className="w-full overflow-x-auto">
+
+                        {/* Markshet container */}
+                        <div className="min-w-[900px] mx-auto">
+
+                            <MarksheetLayout
+                                marksheet={marksheet}
+                                semLabel={semLabel}
+                                selectedSem={selectedSem}
+                                marksheetCode={marksheetCode}
+                                verificationUrl={verificationUrl}
+                                summary={summary}
+                                hash={hash}
+                                courseDisplay={courseDisplay}
+                                getGrade={getGrade}
+                            />
+
+                        </div>
+
+                    </div>
 
                 </div>
 
