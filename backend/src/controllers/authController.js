@@ -382,7 +382,7 @@ exports.googleCallback = async (req, res) => {
 
         if (platform === "android") {
 
-            return res.redirect(`cms://oauth-success?token=${token}&role=${role}`);
+            return res.redirect(`cms://oauth-success/?token=${token}&role=${role}`);
 
         }
 
