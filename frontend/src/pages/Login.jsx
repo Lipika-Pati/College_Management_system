@@ -64,7 +64,7 @@ const Login = () => {
         const url = `${import.meta.env.VITE_BACKEND}/api/auth/google-redirect?platform=${platform}`;
 
         if (isElectron) {
-            window.open(url, "_blank");
+            window.location.href = url;
         } else {
             await Browser.open({ url });
         }

@@ -14,7 +14,6 @@ function createWindow() {
         height: 800,
         minWidth: 900,
         minHeight: 600,
-        show: false,
         webPreferences: {
             contextIsolation: true,
             nodeIntegration: false
@@ -22,58 +21,58 @@ function createWindow() {
     });
 
     mainWindow.loadFile(path.join(__dirname, "../release/index.html"));
+    mainWindow.webContents.on("will-redirect", (event, url) => {
 
-    mainWindow.once("ready-to-show", () => {
-        mainWindow.show();
-    });
-
-    /* ===== OAuth redirect interceptor ===== */
-
-    mainWindow.webContents.on("will-navigate", (event, url) => {
-
-        if (url.startsWith("http://localhost/oauth-success")) {
+        if (url.includes("/oauth-success")) {
 
             event.preventDefault();
 
             const parsed = new URL(url);
-
             const token = parsed.searchParams.get("token");
             const role = parsed.searchParams.get("role");
 
-            if (token) {
-
-                mainWindow.webContents.executeJavaScript(`
-                    localStorage.setItem("token","${token}");
-                    localStorage.setItem("role","${role}");
-                    window.location.href="/oauth-success";
-                `);
-
-            }
+            mainWindow.webContents.executeJavaScript(`
+            localStorage.setItem("token","${token}");
+            localStorage.setItem("role","${role}");
+            window.location.href="/oauth-success";
+        `);
 
         }
 
     });
 
-    /* ===== External links open in browser ===== */
+    mainWindow.webContents.on("will-navigate", (event, url) => {
 
-    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.includes("/oauth-success")) {
 
-        if (url.startsWith("http://localhost/oauth-success")) {
+            event.preventDefault();
 
             const parsed = new URL(url);
-
             const token = parsed.searchParams.get("token");
             const role = parsed.searchParams.get("role");
 
-            if (token) {
+            mainWindow.webContents.executeJavaScript(`
+            localStorage.setItem("token","${token}");
+            localStorage.setItem("role","${role}");
+            window.location.href="/oauth-success";
+        `);
+        }
 
-                mainWindow.webContents.executeJavaScript(`
-                    localStorage.setItem("token","${token}");
-                    localStorage.setItem("role","${role}");
-                    window.location.href="/oauth-success";
-                `);
+    });
 
-            }
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+
+        if (url.includes("/oauth-success")){
+
+            const parsed = new URL(url);
+            const token = parsed.searchParams.get("token");
+            const role = parsed.searchParams.get("role");
+
+            mainWindow.webContents.executeJavaScript(`
+                localStorage.setItem("token","${token}");
+                localStorage.setItem("role","${role}");
+                window.location.href="/oauth-success";
+            `);
 
             return { action: "deny" };
         }
@@ -84,20 +83,8 @@ function createWindow() {
 
 }
 
-app.whenReady().then(() => {
-
-    createWindow();
-
-    app.on("activate", () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    });
-
-});
+app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-        app.quit();
-    }
+    if (process.platform !== "darwin") app.quit();
 });
