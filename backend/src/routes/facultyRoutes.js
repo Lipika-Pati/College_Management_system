@@ -25,6 +25,13 @@ router.get(
     facultyController.getFaculties
 );
 
+
+router.get(
+  "/assigned-subjects",
+  authMiddleware,
+  facultyController.getAssignedSubjects
+);
+
 router.get(
   "/profile",
   authMiddleware,

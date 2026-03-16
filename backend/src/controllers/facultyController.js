@@ -1153,3 +1153,46 @@ const deleteOldFacultyPhoto = (facultyid) => {
     }
   });
 };
+
+
+
+
+// ==============================
+// GET FACULTY ASSIGNED SUBJECTS
+// ==============================
+exports.getAssignedSubjects = async (req, res) => {
+  try {
+    const user = req.user || {};
+    const email = user.emailid || user.email;
+
+    if (!email) {
+      return res.status(401).json({ message: "Token does not contain emailid" });
+    }
+
+    const [rows] = await db.query(
+      `SELECT
+          f.subject AS subjectcode,
+          s.subjectname,
+          f.courcecode,
+          f.semoryear
+       FROM faculties f
+       LEFT JOIN subject s
+         ON f.subject = s.subjectcode
+       WHERE (f.emailid = ? OR f.facultyid = ?)
+         AND f.subject IS NOT NULL
+         AND f.subject <> ''
+         AND f.subject <> 'NOT ASSIGNED'
+       LIMIT 1`,
+      [email, email]
+    );
+
+    if (!rows.length) {
+      return res.json([]);
+    }
+
+    return res.json(rows);
+  } catch (error) {
+    console.error("getAssignedSubjects error:", error);
+    return res.status(500).json({ message: "Error fetching assigned subjects" });
+  }
+};

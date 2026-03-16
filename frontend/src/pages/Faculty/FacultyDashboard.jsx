@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import api from "../../utils/api";
 
 function StatCard({ title, value }) {
   return (
@@ -14,6 +15,7 @@ function StatCard({ title, value }) {
 }
 
 export default function FacultyDashboard() {
+ const token = localStorage.getItem("token");
  const [stats, setStats] = useState({
   totalStudents: 0,
   totalFaculty: 0,
@@ -23,45 +25,26 @@ export default function FacultyDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/api/faculty/dashboard", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        if (!token) {
-          setLoading(false);
-          return;
-        }
+      setStats({
+        totalStudents: res.data.total_students ?? 0,
+        totalFaculty: res.data.total_faculty ?? 0,
+        totalSubjects: res.data.total_subjects ?? 0,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const res = await fetch("http://localhost:5000/api/faculty/dashboard", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.error("Faculty stats API error:", data);
-          setLoading(false);
-          return;
-        }
-
-        setStats({
-  totalStudents: data.total_students ?? 0,
-  totalFaculty: data.total_faculty ?? 0,
-  totalSubjects: data.total_subjects ?? 0,
-});
-
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to load faculty dashboard stats:", err);
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
+  if (token) fetchStats();
+}, [token]);
 
   return (
     <div className="w-full h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-10 lg:p-12 space-y-10 transition-colors">

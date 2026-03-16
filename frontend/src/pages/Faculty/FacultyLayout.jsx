@@ -15,17 +15,9 @@ export default function FacultyLayout() {
       : "light";
   });
 
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user") || "{}");
-    } catch {
-      return {};
-    }
-  });
+  const [user, setUser] = useState({});
 
-  const [imgBust, setImgBust] = useState(
-    localStorage.getItem("imgBust") || "0"
-  );
+  const [imgBust, setImgBust] = useState(0);
 
   useEffect(() => {
     if (theme === "dark") document.documentElement.classList.add("dark");
@@ -38,55 +30,38 @@ export default function FacultyLayout() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
-  useEffect(() => {
-    const syncAll = () => {
-      try {
-        setUser(JSON.parse(localStorage.getItem("user") || "{}"));
-      } catch {
-        setUser({});
-      }
-
-      setImgBust(localStorage.getItem("imgBust") || "0");
-    };
-
-    syncAll();
-
-    window.addEventListener("facultyUserUpdated", syncAll);
-    window.addEventListener("storage", syncAll);
-
-    return () => {
-      window.removeEventListener("facultyUserUpdated", syncAll);
-      window.removeEventListener("storage", syncAll);
-    };
-  }, []);
+ 
 
   useEffect(() => {
-    const fetchFacultyProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+  const fetchFacultyProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const res = await api.get("/api/faculty/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      const res = await api.get("/api/faculty/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const facultyData = res.data || {};
+      const facultyData = res.data || {};
+      setUser(facultyData);
+      setImgBust(Date.now()); // refresh profile image
+    } catch (error) {
+      console.error("Failed to fetch faculty profile:", error);
+    }
+  };
 
-        localStorage.setItem("user", JSON.stringify(facultyData));
-        localStorage.setItem("lastlogin", facultyData.lastlogin || "");
-        setUser(facultyData);
-      } catch (error) {
-        console.error("Failed to fetch faculty profile:", error);
-      }
-    };
+  fetchFacultyProfile();
 
-    fetchFacultyProfile();
-  }, []);
+  window.addEventListener("facultyUserUpdated", fetchFacultyProfile);
 
-  const lastLoginRaw =
-    user?.lastlogin ?? user?.lastLogin ?? localStorage.getItem("lastlogin") ?? "";
+  return () => {
+    window.removeEventListener("facultyUserUpdated", fetchFacultyProfile);
+  };
+}, []);
+
+  const lastLoginRaw = user?.lastlogin ?? user?.lastLogin ?? "";
 
   const lastLogin = (() => {
     if (!lastLoginRaw) return "-";
@@ -189,6 +164,22 @@ export default function FacultyLayout() {
             >
               Dashboard
             </NavLink>
+
+            <NavLink
+  to="/faculty/take-attendance"
+  className={({ isActive }) =>
+    [
+      "block w-full px-4 py-3 rounded-lg font-medium transition text-sm",
+      isActive
+        ? "bg-slate-900 text-white shadow-sm dark:bg-gray-700"
+        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
+    ].join(" ")
+  }
+>
+  Take Attendance
+</NavLink>
+
+
 
             <NavLink
               to="/faculty/profile"
