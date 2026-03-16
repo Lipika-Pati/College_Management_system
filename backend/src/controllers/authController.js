@@ -385,6 +385,9 @@ exports.googleCallback = async (req, res) => {
             return res.redirect(`cms://oauth-success/?token=${token}&role=${role}`);
 
         }
+        if (platform === "electron") {
+            return res.redirect(`http://localhost/oauth-success?token=${token}&role=${role}`);
+        }
 
         return res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}&role=${role}`);
 

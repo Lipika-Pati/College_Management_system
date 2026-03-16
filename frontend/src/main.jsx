@@ -30,7 +30,9 @@ const applyTheme = () => {
 };
 
 applyTheme();
-StatusBar.hide();
+if (Capacitor.isNativePlatform()) {
+    StatusBar.hide();
+}
 
 if (Capacitor.isNativePlatform()) {
 

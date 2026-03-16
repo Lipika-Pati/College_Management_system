@@ -17,7 +17,10 @@ const Login = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const isNative = Capacitor.isNativePlatform();
+    const isElectron =
+        typeof navigator !== "undefined" &&
+        navigator.userAgent.toLowerCase().includes("electron");
+    const isNative = Capacitor.isNativePlatform() || isElectron;
 
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem("theme");
@@ -56,9 +59,16 @@ const Login = () => {
         setTheme((prev) => (prev === "dark" ? "light" : "dark"));
     };
     const loginWithGoogleNative = async () => {
-        await Browser.open({
-            url: `${import.meta.env.VITE_BACKEND}/api/auth/google-redirect?platform=android`
-        });
+
+        const platform = isElectron ? "electron" : "android";
+        const url = `${import.meta.env.VITE_BACKEND}/api/auth/google-redirect?platform=${platform}`;
+
+        if (isElectron) {
+            window.open(url, "_blank");
+        } else {
+            await Browser.open({ url });
+        }
+
     };
 
     /* ================= Login ================= */

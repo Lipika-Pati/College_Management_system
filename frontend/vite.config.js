@@ -4,9 +4,11 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => {
-  const isProduction = mode === "production";
+  const isElectron = process.env.ELECTRON === "true";
+  const isProduction = mode === "production" && !isElectron;
 
   return {
+    base: "./",
     plugins: [
       react(),
       tailwindcss(),
