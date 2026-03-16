@@ -246,7 +246,7 @@ exports.googleLogin = async (req, res) => {
 exports.googleRedirect = (req, res) => {
 
     const redirectUri = `${process.env.BASE_URL}/api/auth/google-callback`;
-
+    const platform = req.query.platform || "web";
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
 
     authUrl.searchParams.set("client_id", process.env.GOOGLE_CLIENT_ID);
@@ -257,7 +257,7 @@ exports.googleRedirect = (req, res) => {
     authUrl.searchParams.set("prompt", "select_account");
 
     // optional security parameter
-    authUrl.searchParams.set("state", "google_login");
+    authUrl.searchParams.set("state", platform);
 
     console.log("Redirecting to Google OAuth:", authUrl.toString());
 
@@ -268,7 +268,8 @@ exports.googleCallback = async (req, res) => {
 
     try {
 
-        const { code } = req.query;
+        const { code, state } = req.query;
+        const platform = state || "web";
 
         if (!code) {
             return res.status(400).send("Authorization code missing");
@@ -379,7 +380,13 @@ exports.googleCallback = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000
         });
 
-        res.redirect(`${process.env.FRONTEND_URL}/oauth-success?role=${role}`);
+        if (platform === "android") {
+
+            return res.redirect(`cms://oauth-success?token=${token}&role=${role}`);
+
+        }
+
+        return res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}&role=${role}`);
 
     } catch (error) {
 

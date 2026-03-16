@@ -1,6 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { StatusBar } from "@capacitor/status-bar";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import App from "./App";
 import "./index.css";
 
@@ -26,7 +29,29 @@ const applyTheme = () => {
 };
 
 applyTheme();
+StatusBar.hide();
 
+if (Capacitor.isNativePlatform()) {
+
+    CapacitorApp.addListener("appUrlOpen", (event) => {
+
+        const url = new URL(event.url);
+
+        const token = url.searchParams.get("token");
+        const role = url.searchParams.get("role");
+
+        if (token) {
+
+            localStorage.setItem("token", token);
+            localStorage.setItem("role", role);
+
+            window.location.href = "/oauth-success";
+
+        }
+
+    });
+
+}
 /* ===================== Render ===================== */
 
 ReactDOM.createRoot(document.getElementById("root")).render(
