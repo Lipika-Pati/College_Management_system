@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { StatusBar } from "@capacitor/status-bar";
+import { Browser } from "@capacitor/browser";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import App from "./App";
@@ -33,22 +34,38 @@ StatusBar.hide();
 
 if (Capacitor.isNativePlatform()) {
 
-    CapacitorApp.addListener("appUrlOpen", (event) => {
+    const handleOAuth = async (url) => {
 
-        const url = new URL(event.url);
+        if (!url || !url.includes("oauth-success")) return;
 
-        const token = url.searchParams.get("token");
-        const role = url.searchParams.get("role");
+        console.log("Deep link:", url);
+
+        // Close Google browser
+        await Browser.close();
+
+        const parsed = new URL(url);
+
+        const token = parsed.searchParams.get("token");
+        const role = parsed.searchParams.get("role");
 
         if (token) {
-
             localStorage.setItem("token", token);
             localStorage.setItem("role", role);
 
-            window.location.href = "/oauth-success";
-
+            window.location.replace("/oauth-success");
         }
+    };
 
+    // App already running
+    CapacitorApp.addListener("appUrlOpen", (event) => {
+        handleOAuth(event.url);
+    });
+
+    // App launched from deep link
+    CapacitorApp.getLaunchUrl().then((data) => {
+        if (data?.url) {
+            handleOAuth(data.url);
+        }
     });
 
 }
