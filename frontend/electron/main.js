@@ -28,53 +28,8 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     });
 
-    // Catch navigation events (OAuth redirect)
-    mainWindow.webContents.on("will-navigate", (event, url) => {
-
-        if (url.startsWith("http://localhost/oauth-success")) {
-
-            event.preventDefault();
-
-            const parsed = new URL(url);
-            const token = parsed.searchParams.get("token");
-            const role = parsed.searchParams.get("role");
-
-            if (token) {
-
-                mainWindow.webContents.executeJavaScript(`
-                    localStorage.setItem("token","${token}");
-                    localStorage.setItem("role","${role}");
-                    window.location.href="/oauth-success";
-                `);
-
-            }
-
-        }
-
-    });
-
-    // Handle window.open
+    // Open external links in system browser
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-
-        if (url.startsWith("http://localhost/oauth-success")) {
-
-            const parsed = new URL(url);
-            const token = parsed.searchParams.get("token");
-            const role = parsed.searchParams.get("role");
-
-            if (token) {
-
-                mainWindow.webContents.executeJavaScript(`
-                    localStorage.setItem("token","${token}");
-                    localStorage.setItem("role","${role}");
-                    window.location.href="/oauth-success";
-                `);
-
-            }
-
-            return { action: "deny" };
-        }
-
         shell.openExternal(url);
         return { action: "deny" };
     });
@@ -82,6 +37,9 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+
+    // Register deep link protocol
+    app.setAsDefaultProtocolClient("cms");
 
     createWindow();
 
@@ -93,8 +51,35 @@ app.whenReady().then(() => {
 
 });
 
+/* ================= Deep Link Handler ================= */
+
+app.on("open-url", (event, url) => {
+
+    event.preventDefault();
+
+    const parsed = new URL(url);
+
+    const token = parsed.searchParams.get("token");
+    const role = parsed.searchParams.get("role");
+
+    if (token && mainWindow) {
+
+        mainWindow.webContents.executeJavaScript(`
+            localStorage.setItem("token","${token}");
+            localStorage.setItem("role","${role}");
+            window.location.href="/oauth-success";
+        `);
+
+    }
+
+});
+
+/* ================= Close App ================= */
+
 app.on("window-all-closed", () => {
+
     if (process.platform !== "darwin") {
         app.quit();
     }
+
 });
