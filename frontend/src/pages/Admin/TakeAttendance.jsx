@@ -286,18 +286,20 @@ const TakeAttendance = () => {
                     </table>
                 </div>
 
-                {/* FOOTER BUTTON MATCHING FACULTY STYLE */}
-                <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end">
-                    {isFormReady && (
-                        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end">
-                            <button
-                                onClick={() => setShowSaveModal(true)}
-                                className="w-full sm:w-auto px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition">
-                                Save Attendance
-                            </button>
-                        </div>
-                    )}
-                </div>
+                    {/* FOOTER BUTTON */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end">
+                        <button
+                            onClick={() => setShowSaveModal(true)}
+                            disabled={!isFormReady}
+                            className={`w-full sm:w-auto px-4 py-3 sm:py-2 text-sm rounded-md transition
+                            ${isFormReady
+                                ? "bg-gray-900 text-white hover:bg-black"
+                                : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400"
+                            }`}
+                        >
+                            Save Attendance
+                        </button>
+                    </div>
 
             </div>
             )}
