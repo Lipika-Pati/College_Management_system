@@ -141,7 +141,13 @@ const PrintMarksheet = () => {
     /* ================= PRINT ================= */
 
     const downloadPDF = () => {
-        window.print();
+
+        if (window.electronAPI) {
+            window.electronAPI.printMarksheet();
+        } else {
+            window.print();
+        }
+
     };
 
     /* ================= MARKSHEET META ================= */
