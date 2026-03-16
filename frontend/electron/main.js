@@ -7,6 +7,53 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow;
 
+/* ================= Resolve React Build ================= */
+
+function getIndexPath() {
+
+    if (app.isPackaged) {
+        return path.join(process.resourcesPath, "app.asar", "release", "index.html");
+    }
+
+    return path.join(__dirname, "../release/index.html");
+}
+
+/* ================= OAuth Handler ================= */
+
+function handleOAuth(url) {
+
+    try {
+
+        const parsed = new URL(url);
+        const token = parsed.searchParams.get("token");
+        const role = parsed.searchParams.get("role");
+
+        console.log("OAuth success detected");
+        console.log("Token:", token);
+        console.log("Role:", role);
+
+        if (!token || !role) return;
+
+        const indexPath = getIndexPath();
+
+        mainWindow.loadFile(indexPath, { hash: "/" }).then(() => {
+
+            mainWindow.webContents.executeJavaScript(`
+                localStorage.setItem("token","${token}");
+                localStorage.setItem("role","${role}");
+                window.location.hash="/oauth-success";
+            `);
+
+        });
+
+    } catch (err) {
+        console.error("OAuth handling error:", err);
+    }
+
+}
+
+/* ================= Create Window ================= */
+
 function createWindow() {
 
     mainWindow = new BrowserWindow({
@@ -14,74 +61,52 @@ function createWindow() {
         height: 800,
         minWidth: 900,
         minHeight: 600,
+        backgroundColor: "#ffffff",
         webPreferences: {
             contextIsolation: true,
             nodeIntegration: false
         }
     });
 
-    mainWindow.loadFile(path.join(__dirname, "../release/index.html"));
-    mainWindow.webContents.on("will-redirect", (event, url) => {
+    const indexPath = getIndexPath();
+
+    mainWindow.loadFile(indexPath, { hash: "/" });
+
+    const wc = mainWindow.webContents;
+
+    wc.on("will-redirect", (event, url) => {
 
         if (url.includes("/oauth-success")) {
-
             event.preventDefault();
-
-            const parsed = new URL(url);
-            const token = parsed.searchParams.get("token");
-            const role = parsed.searchParams.get("role");
-
-            mainWindow.webContents.executeJavaScript(`
-            localStorage.setItem("token","${token}");
-            localStorage.setItem("role","${role}");
-            window.location.href="/oauth-success";
-        `);
-
+            handleOAuth(url);
         }
 
     });
 
-    mainWindow.webContents.on("will-navigate", (event, url) => {
+    wc.on("will-navigate", (event, url) => {
 
         if (url.includes("/oauth-success")) {
-
             event.preventDefault();
-
-            const parsed = new URL(url);
-            const token = parsed.searchParams.get("token");
-            const role = parsed.searchParams.get("role");
-
-            mainWindow.webContents.executeJavaScript(`
-            localStorage.setItem("token","${token}");
-            localStorage.setItem("role","${role}");
-            window.location.href="/oauth-success";
-        `);
+            handleOAuth(url);
         }
 
     });
 
-    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    wc.setWindowOpenHandler(({ url }) => {
 
-        if (url.includes("/oauth-success")){
-
-            const parsed = new URL(url);
-            const token = parsed.searchParams.get("token");
-            const role = parsed.searchParams.get("role");
-
-            mainWindow.webContents.executeJavaScript(`
-                localStorage.setItem("token","${token}");
-                localStorage.setItem("role","${role}");
-                window.location.href="/oauth-success";
-            `);
-
+        if (url.includes("/oauth-success")) {
+            handleOAuth(url);
             return { action: "deny" };
         }
 
         shell.openExternal(url);
         return { action: "deny" };
+
     });
 
 }
+
+/* ================= App Lifecycle ================= */
 
 app.whenReady().then(createWindow);
 
