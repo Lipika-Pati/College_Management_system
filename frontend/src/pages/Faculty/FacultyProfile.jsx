@@ -257,7 +257,7 @@ const EditDetailsModalAll = ({ faculty, token, onClose }) => {
   const [profileFile, setProfileFile] = useState(null);
 
   const [preview, setPreview] = useState(() => {
-    const bust = localStorage.getItem("imgBust") || "0";
+    const bust = Date.now();
 
     if (!faculty.profilepic)
       return `${api.defaults.baseURL}/uploads/faculties/default.png?v=${bust}`;
@@ -270,7 +270,7 @@ const EditDetailsModalAll = ({ faculty, token, onClose }) => {
   });
 
   useEffect(() => {
-    const bust = localStorage.getItem("imgBust") || "0";
+    const bust = Date.now();
 
     let next = `${api.defaults.baseURL}/uploads/faculties/default.png?v=${bust}`;
 
@@ -316,7 +316,7 @@ const EditDetailsModalAll = ({ faculty, token, onClose }) => {
       //  1) Update normal profile fields ONLY
       const fd = new FormData();
 
-      // ❗Do NOT send email/password fields to /profile
+      // Do NOT send email/password fields to /profile
       const blockedKeys = new Set([
         "currentEmailForEmail",
         "newEmail",
@@ -395,8 +395,7 @@ const EditDetailsModalAll = ({ faculty, token, onClose }) => {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
-      localStorage.setItem("user", JSON.stringify(res.data));
-      localStorage.setItem("imgBust", String(Date.now()));
+      
       window.dispatchEvent(new Event("facultyUserUpdated"));
       setSuccessMsg("Details saved successfully");
 
