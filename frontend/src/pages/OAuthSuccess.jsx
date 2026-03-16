@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
 const OAuthSuccess = () => {
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -12,24 +13,26 @@ const OAuthSuccess = () => {
         const token = params.get("token");
         const role = params.get("role");
 
-        /* ===== If token exists in URL (Android redirect) ===== */
+        /* ===== Token present in URL (Google redirect) ===== */
 
         if (token && role) {
 
             localStorage.setItem("token", token);
             localStorage.setItem("role", role);
 
+            // remove token from URL
+            window.history.replaceState({}, document.title, "/oauth-success");
+
             redirectByRole(role);
             return;
         }
 
-        /* ===== Otherwise try session cookie (web login) ===== */
+        /* ===== Otherwise try session cookie ===== */
 
         api.get("/api/auth/session")
             .then((res) => {
 
-                const token = res.data.token;
-                const role = params.get("role");
+                const { token, role } = res.data;
 
                 if (!token || !role) {
                     navigate("/", { replace: true });
@@ -70,6 +73,7 @@ const OAuthSuccess = () => {
             <p>Signing you in...</p>
         </div>
     );
+
 };
 
 export default OAuthSuccess;
