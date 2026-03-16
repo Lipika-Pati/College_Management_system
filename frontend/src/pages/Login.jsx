@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { Sun, Moon, Eye, EyeOff } from "lucide-react";
 import api from "../utils/api";
 
@@ -53,6 +54,11 @@ const Login = () => {
 
     const toggleTheme = () => {
         setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    };
+    const loginWithGoogleNative = async () => {
+        await Browser.open({
+            url: `${import.meta.env.VITE_BACKEND}/api/auth/google-redirect?platform=android`
+        });
     };
 
     /* ================= Login ================= */
@@ -222,10 +228,7 @@ const Login = () => {
                 <div className="mt-6 flex justify-center">
                     {isNative ? (
                         <button
-                            onClick={() => {
-                                window.location.href =
-                                    `${import.meta.env.VITE_BACKEND}/api/auth/google-redirect?platform=android`;
-                            }}
+                            onClick={loginWithGoogleNative}
                             className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                         >
                             Sign in with Google
