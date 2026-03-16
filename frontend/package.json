@@ -9,7 +9,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron": "electron ."
+    "electron": "electron .",
+    "dist": "ELECTRON=true vite build && electron-builder"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
@@ -49,5 +50,25 @@
     "tailwindcss": "^4.2.0",
     "vite": "^7.3.1",
     "wait-on": "^9.0.4"
+  },
+  "build": {
+    "directories": {
+      "output": "release/installers"
+    },
+    "appId": "com.college.cms",
+    "productName": "College Management System",
+    "files": [
+      "release/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": "AppImage",
+      "category": "Education"
+    },
+    "protocols": {
+      "name": "CMS OAuth",
+      "schemes": ["cms"]
+    }
   }
 }

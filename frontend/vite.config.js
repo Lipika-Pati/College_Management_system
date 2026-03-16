@@ -4,16 +4,19 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => {
+
   const isElectron = process.env.ELECTRON === "true";
   const isProduction = mode === "production" && !isElectron;
 
   return {
+
     base: "./",
+
     plugins: [
       react(),
       tailwindcss(),
 
-      // Enable PWA ONLY in production
+      // Enable PWA ONLY for web production
       isProduction &&
       VitePWA({
         registerType: "autoUpdate",
@@ -54,17 +57,13 @@ export default defineConfig(({ mode }) => {
                   request.destination === "style" ||
                   request.destination === "script",
               handler: "CacheFirst",
-              options: {
-                cacheName: "static-assets",
-              },
+              options: { cacheName: "static-assets" },
             },
             {
               urlPattern: ({ request }) =>
                   request.destination === "image",
               handler: "CacheFirst",
-              options: {
-                cacheName: "images",
-              },
+              options: { cacheName: "images" },
             },
             {
               urlPattern: ({ url }) =>
@@ -81,10 +80,16 @@ export default defineConfig(({ mode }) => {
       }),
     ].filter(Boolean),
 
+    build: {
+      outDir: isElectron ? "release" : "dist"
+    },
+
     server: {
       host: true,
       port: 5173,
       strictPort: true,
     },
+
   };
+
 });
