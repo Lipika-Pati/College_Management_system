@@ -7,6 +7,8 @@ import MarksheetLayout from "./MarksheetLayout";
 const PrintMarksheet = () => {
 
     const token = localStorage.getItem("token");
+    const params = new URLSearchParams(window.location.search);
+    const isPrintMode = params.get("print") === "true";
 
     const [courses, setCourses] = useState([]);
     const [students, setStudents] = useState([]);
@@ -20,6 +22,11 @@ const PrintMarksheet = () => {
 
     const [hash, setHash] = useState("");
 
+    const getAuthHeader = () => {
+        if (isPrintMode) return {};
+        return { Authorization: `Bearer ${token}` };
+    };
+
     /* ================= FETCH COURSES ================= */
 
     useEffect(() => {
@@ -29,7 +36,7 @@ const PrintMarksheet = () => {
             try {
 
                 const res = await api.get("/api/courses", {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: getAuthHeader()
                 });
 
                 setCourses(res.data || []);
@@ -79,7 +86,7 @@ const PrintMarksheet = () => {
 
                 const res = await api.get(
                     `/api/marks/students?course=${selectedCourse}&sem=${selectedSem}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    { headers: getAuthHeader() }
                 );
 
                 setStudents(res.data || []);
@@ -95,6 +102,8 @@ const PrintMarksheet = () => {
         fetchStudents();
 
     }, [selectedCourse, selectedSem]);
+
+    /* ================= PRINT MODE AUTO LOAD ================= */
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -113,7 +122,8 @@ const PrintMarksheet = () => {
                 (async () => {
                     try {
                         const res = await api.get(
-                            `/api/marks/student-marks?course=${course}&sem=${sem}&roll=${roll}`
+                            `/api/marks/student-marks?course=${course}&sem=${sem}&roll=${roll}`,
+                            { headers: getAuthHeader() }
                         );
 
                         setMarksheet(res.data);
@@ -125,26 +135,17 @@ const PrintMarksheet = () => {
         }
     }, []);
 
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const shouldPrint = params.get("print");
+    /* ================= AUTO PRINT ================= */
 
-        if (shouldPrint === "true" && marksheet) {
+    useEffect(() => {
+        if (isPrintMode && marksheet) {
             setTimeout(() => {
                 try {
                     window.print();
-
-                    // clean URL after print
-                    window.history.replaceState(
-                        {},
-                        document.title,
-                        window.location.pathname
-                    );
-
                 } catch (e) {
                     console.error("Print failed:", e);
                 }
-            }, 300);
+            }, 500);
         }
     }, [marksheet]);
 
@@ -163,7 +164,7 @@ const PrintMarksheet = () => {
 
             const res = await api.get(
                 `/api/marks/student-marks?course=${selectedCourse}&sem=${selectedSem}&roll=${selectedRoll}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: getAuthHeader() }
             );
 
             setMarksheet(res.data);
@@ -207,7 +208,7 @@ const PrintMarksheet = () => {
                 return;
             }
 
-            // Android
+            // Android (FIXED)
             if (Capacitor.isNativePlatform()) {
                 try {
                     const FRONTEND_URL = import.meta.env.VITE_FRONTEND;
@@ -219,7 +220,8 @@ const PrintMarksheet = () => {
                     url.searchParams.set("sem", selectedSem);
                     url.searchParams.set("roll", selectedRoll);
 
-                    await Browser.open({ url: url.toString() });
+                    window.open(url.toString(), "_system");
+
                 } catch (e) {
                     console.error("Browser open failed:", e);
                     setError("Failed to open print view.");
@@ -302,7 +304,6 @@ const PrintMarksheet = () => {
 
         <div className="space-y-10">
 
-            {/* HEADER */}
             <div>
                 <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
                     Student Marksheet
@@ -313,7 +314,6 @@ const PrintMarksheet = () => {
                 </p>
             </div>
 
-            {/* FILTER PANEL */}
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4">
 
                 <select
@@ -370,14 +370,12 @@ const PrintMarksheet = () => {
 
             </div>
 
-            {/* ERROR */}
             {error && (
                 <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-md">
                     {error}
                 </div>
             )}
 
-            {/* MARKSHEET */}
             {marksheet && (
 
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4 md:p-6">
@@ -391,10 +389,7 @@ const PrintMarksheet = () => {
                         </button>
                     </div>
 
-                    {/* Scroll container so mobile doesn't break layout */}
                     <div className="w-full overflow-x-auto">
-
-                        {/* Markshet container */}
                         <div className="min-w-[900px] mx-auto">
 
                             <MarksheetLayout
@@ -410,7 +405,6 @@ const PrintMarksheet = () => {
                             />
 
                         </div>
-
                     </div>
 
                 </div>

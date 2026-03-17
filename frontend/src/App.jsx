@@ -99,6 +99,9 @@ function App() {
                 {/* Smart Root Route */}
                 <Route path="/" element={<RootHandler />} />
 
+                {/* Print Marksheet */}
+                <Route path="/print-marksheet" element={<PrintMarksheet />} />
+
                 {/* OAuth Redirect Handler */}
                 <Route path="/oauth-success" element={<OAuthSuccess />} />
 
