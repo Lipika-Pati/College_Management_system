@@ -57,3 +57,41 @@ const StudentAttendance = () => {
 
                         const percentage =
                             ((item.attended_classes / item.total_classes) * 100).toFixed(1);
+
+                        return (
+
+                            <tr key={index}>
+
+                                <td className="border p-2">
+                                    {item.subject}
+                                </td>
+
+                                <td className="border p-2">
+                                    {item.total_classes}
+                                </td>
+
+                                <td className="border p-2">
+                                    {item.attended_classes}
+                                </td>
+
+                                <td className="border p-2">
+                                    {percentage}%
+                                </td>
+
+                            </tr>
+
+                        );
+
+                    })}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    );
+
+};
+
+    
