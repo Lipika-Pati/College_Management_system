@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 import api from "../../utils/api";
 import MarksheetLayout from "./MarksheetLayout";
 
