@@ -61,6 +61,18 @@ const StudentLayout = () => {
         fetchStudent();
 
     }, [token]);
+
+    /* ===================== Logout ===================== */
+
+    const handleLogout = () => {
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("lastPage");
+
+        navigate("/", { replace: true });
+
+    };
     
 
         
