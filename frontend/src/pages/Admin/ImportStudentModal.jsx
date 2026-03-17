@@ -2,18 +2,21 @@ import { useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import api from "../../utils/api";
+import ConfirmSaveModal from "./ConfirmSaveModal.jsx";
 
 const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState("");
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
 
     const handleDownloadTemplate = async () => {
         try {
+            setError("");
             const url = `${api.defaults.baseURL}/api/student/template`;
 
-            // ANDROID (Capacitor)
             if (Capacitor.isNativePlatform()) {
                 setLoading(true);
 
@@ -34,28 +37,64 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
 
                 reader.onload = async () => {
                     const filePath = "Student_Import_Template.xlsx";
+                    const fileData = reader.result;
 
                     try {
+                        let fileExists = false;
+
                         try {
                             await Filesystem.stat({
                                 path: filePath,
                                 directory: Directory.Documents,
                             });
-
-                            await Filesystem.deleteFile({
-                                path: filePath,
-                                directory: Directory.Documents,
-                            });
+                            fileExists = true;
                         } catch (_) {
-                            // if file doesn't exist -> ignore
+                            fileExists = false;
                         }
+                        if (fileExists) {
+                            setLoading(false);
+                            setShowConfirm(true);
+
+                            setConfirmAction(() => async () => {
+                                try {
+                                    await Filesystem.deleteFile({
+                                        path: filePath,
+                                        directory: Directory.Documents,
+                                    });
+                                } catch (err) {
+                                    console.warn("Delete failed, will try overwrite");
+                                }
+
+                                try {
+                                    await Filesystem.writeFile({
+                                        path: filePath,
+                                        data: fileData,
+                                        directory: Directory.Documents,
+                                        recursive: true,
+                                    });
+
+                                    setError("");
+                                    alert("Download complete");
+
+                                } catch (err) {
+                                    console.error(err);
+                                    setError("Failed to save file");
+                                } finally {
+                                    setLoading(false);
+                                }
+                            });
+
+                            return;
+                        }
+
                         await Filesystem.writeFile({
                             path: filePath,
-                            data: reader.result,
+                            data: fileData,
                             directory: Directory.Documents,
                             recursive: true,
                         });
 
+                        setError("");
                         alert("Download complete");
 
                     } catch (e) {
@@ -176,7 +215,10 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                             <input
                                 type="file"
                                 accept=".xlsx,.xls"
-                                onChange={(e) => setFile(e.target.files[0])}
+                                onChange={(e) => {
+                                    setFile(e.target.files[0]);
+                                    setError("");
+                                }}
                                 className="hidden"
                             />
                         </label>
@@ -218,6 +260,23 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                     )}
                 </div>
             </div>
+            <ConfirmSaveModal
+                show={showConfirm}
+                title="File Already Exists"
+                message="A file with the same name already exists. Do you want to replace it?"
+                confirmText="Replace"
+                onCancel={() => {
+                    setShowConfirm(false);
+                    setLoading(false);
+                }}
+                onConfirm={async () => {
+                    setLoading(true);
+                    if (confirmAction) await confirmAction();
+                    setConfirmAction(null);
+                    setShowConfirm(false);
+                }}
+                loading={loading}
+            />
         </div>
     );
 };

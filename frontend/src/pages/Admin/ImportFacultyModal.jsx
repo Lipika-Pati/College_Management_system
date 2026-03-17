@@ -2,15 +2,19 @@ import { useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import api from "../../utils/api";
+import ConfirmSaveModal from "./ConfirmSaveModal.jsx";
 
 const ImportFacultyModal = ({ token, onClose, onImportSuccess }) => {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState("");
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
 
     const handleDownloadTemplate = async () => {
         try {
+            setError("");
             const url = `${api.defaults.baseURL}/api/faculty/template`;
 
             if (Capacitor.isNativePlatform()) {
@@ -32,29 +36,64 @@ const ImportFacultyModal = ({ token, onClose, onImportSuccess }) => {
                 const reader = new FileReader();
                 reader.onload = async () => {
                     const filePath = "Faculty_Import_Template.xlsx";
+                    const fileData = reader.result;
 
                     try {
-                        // Delete if exists
+                        let fileExists = false;
+
                         try {
                             await Filesystem.stat({
                                 path: filePath,
                                 directory: Directory.Documents,
                             });
+                            fileExists = true;
+                        } catch (_) {
+                            fileExists = false;
+                        }
+                        if (fileExists) {
+                            setLoading(false);
+                            setShowConfirm(true);
 
-                            await Filesystem.deleteFile({
-                                path: filePath,
-                                directory: Directory.Documents,
+                            setConfirmAction(() => async () => {
+                                try {
+                                    await Filesystem.deleteFile({
+                                        path: filePath,
+                                        directory: Directory.Documents,
+                                    });
+                                } catch (err) {
+                                    console.warn("Delete failed, will try overwrite");
+                                }
+
+                                try {
+                                    await Filesystem.writeFile({
+                                        path: filePath,
+                                        data: fileData,
+                                        directory: Directory.Documents,
+                                        recursive: true,
+                                    });
+
+                                    setError("");
+                                    alert("Download complete");
+
+                                } catch (err) {
+                                    console.error(err);
+                                    setError("Failed to save file");
+                                } finally {
+                                    setLoading(false);
+                                }
                             });
-                        } catch (_) {}
 
-                        // Write file
+                            return;
+                        }
+
                         await Filesystem.writeFile({
                             path: filePath,
-                            data: reader.result,
+                            data: fileData,
                             directory: Directory.Documents,
                             recursive: true,
                         });
 
+                        setError("");
                         alert("Download complete");
 
                     } catch (err) {
@@ -226,6 +265,23 @@ const ImportFacultyModal = ({ token, onClose, onImportSuccess }) => {
 
                 </div>
             </div>
+            <ConfirmSaveModal
+                show={showConfirm}
+                title="File Already Exists"
+                message="A file with the same name already exists. Do you want to replace it?"
+                confirmText="Replace"
+                onCancel={() => {
+                    setShowConfirm(false);
+                    setLoading(false);
+                }}
+                onConfirm={async () => {
+                    setLoading(true);
+                    if (confirmAction) await confirmAction();
+                    setConfirmAction(null);
+                    setShowConfirm(false);
+                }}
+                loading={loading}
+            />
         </div>
     );
 };
