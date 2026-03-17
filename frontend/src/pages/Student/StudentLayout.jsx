@@ -183,6 +183,11 @@ const StudentLayout = () => {
                     })}
 
                 </nav>
+
+            </aside>
+
+            {/* Main Area */}
+            <div className="flex-1 min-w-0 flex flex-col lg:ml-64">
         </div>
     );
 
