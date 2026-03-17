@@ -16,6 +16,10 @@ const marksRoutes = require("./routes/marksRoutes");
 
 const app = express();
 
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+});
+
 app.use(
     cors({
         origin: function (origin, callback) {
