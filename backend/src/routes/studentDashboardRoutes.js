@@ -16,3 +16,7 @@ router.put("/password", authMiddleware, controller.updatePassword);
 
 router.put("/dob", authMiddleware, controller.updateDOB);
 
+/* ================= Attendance ================= */
+
+router.get("/attendance", authMiddleware, controller.getStudentAttendance);
+
