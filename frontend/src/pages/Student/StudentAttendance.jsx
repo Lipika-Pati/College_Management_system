@@ -31,3 +31,29 @@ const StudentAttendance = () => {
         fetchAttendance();
 
     }, []);
+
+    return (
+
+        <div className="space-y-8">
+
+            <h2 className="text-2xl font-semibold">
+                My Attendance
+            </h2>
+
+            <table className="w-full border">
+
+                <thead>
+                    <tr className="bg-gray-200">
+                        <th className="p-2 border">Subject</th>
+                        <th className="p-2 border">Total Classes</th>
+                        <th className="p-2 border">Attended</th>
+                        <th className="p-2 border">Percentage</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {attendance.map((item, index) => {
+
+                        const percentage =
+                            ((item.attended_classes / item.total_classes) * 100).toFixed(1);
