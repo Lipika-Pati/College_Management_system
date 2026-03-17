@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
 import api from "../../utils/api";
 
 const ImportFacultyModal = ({ token, onClose, onImportSuccess }) => {
@@ -9,22 +11,57 @@ const ImportFacultyModal = ({ token, onClose, onImportSuccess }) => {
 
     const handleDownloadTemplate = async () => {
         try {
-            const response = await api.get(
-                "/api/faculty/template",
-                {
-                    headers: {Authorization: `Bearer ${token}`},
-                    responseType: "blob"
-                }
-            );
+            const url = `${api.defaults.baseURL}/api/faculty/template`;
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            if (Capacitor.isNativePlatform()) {
+                setLoading(true);
+
+                const response = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    setLoading(false);
+                    throw new Error("Download failed");
+                }
+
+                const blob = await response.blob();
+
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    await Filesystem.writeFile({
+                        path: "Faculty_Import_Template.xlsx",
+                        data: reader.result,
+                        directory: Directory.Documents,
+                    });
+
+                    setLoading(false);
+                    alert("Download complete");
+                };
+
+                reader.readAsDataURL(blob);
+                return;
+            }
+
+            const response = await api.get("/api/faculty/template", {
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: "blob"
+            });
+
+            const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement("a");
-            link.href = url;
+            link.href = blobUrl;
             link.setAttribute("download", "Faculty_Import_Template.xlsx");
             document.body.appendChild(link);
             link.click();
             link.remove();
-        } catch {
+            window.URL.revokeObjectURL(blobUrl);
+
+        } catch (err) {
+            console.error(err);
+            setLoading(false);
             setError("Failed to download template.");
         }
     };
@@ -97,7 +134,7 @@ const ImportFacultyModal = ({ token, onClose, onImportSuccess }) => {
                             onClick={handleDownloadTemplate}
                             className="w-full sm:w-auto px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
                         >
-                            Download Template
+                            {loading ? "Downloading..." : "Download Template"}
                         </button>
                     </div>
 

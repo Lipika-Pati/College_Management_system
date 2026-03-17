@@ -1,4 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import api from "../../utils/api";
 import MarksheetLayout from "./MarksheetLayout";
 
@@ -94,6 +96,58 @@ const PrintMarksheet = () => {
 
     }, [selectedCourse, selectedSem]);
 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const shouldPrint = params.get("print");
+
+        if (shouldPrint === "true") {
+            const course = params.get("course");
+            const sem = params.get("sem");
+            const roll = params.get("roll");
+
+            if (course && sem && roll) {
+                setSelectedCourse(course);
+                setSelectedSem(sem);
+                setSelectedRoll(roll);
+
+                (async () => {
+                    try {
+                        const res = await api.get(
+                            `/api/marks/student-marks?course=${course}&sem=${sem}&roll=${roll}`
+                        );
+
+                        setMarksheet(res.data);
+                    } catch (e) {
+                        console.error("Restore fetch failed:", e);
+                    }
+                })();
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const shouldPrint = params.get("print");
+
+        if (shouldPrint === "true" && marksheet) {
+            setTimeout(() => {
+                try {
+                    window.print();
+
+                    // clean URL after print
+                    window.history.replaceState(
+                        {},
+                        document.title,
+                        window.location.pathname
+                    );
+
+                } catch (e) {
+                    console.error("Print failed:", e);
+                }
+            }, 300);
+        }
+    }, [marksheet]);
+
     /* ================= LOAD MARKSHEET ================= */
 
     const loadMarksheet = async () => {
@@ -140,14 +194,47 @@ const PrintMarksheet = () => {
 
     /* ================= PRINT ================= */
 
-    const downloadPDF = () => {
+    const downloadPDF = async () => {
+        try {
+            if (!marksheet) {
+                setError("Load marksheet first.");
+                return;
+            }
 
-        if (window.electronAPI) {
-            window.electronAPI.printMarksheet();
-        } else {
+            // Electron
+            if (window.electronAPI) {
+                window.electronAPI.printMarksheet();
+                return;
+            }
+
+            // Android
+            if (Capacitor.isNativePlatform()) {
+                try {
+                    const FRONTEND_URL = import.meta.env.VITE_FRONTEND;
+
+                    const url = new URL(`${FRONTEND_URL}/admin/print-marksheet`);
+
+                    url.searchParams.set("print", "true");
+                    url.searchParams.set("course", selectedCourse);
+                    url.searchParams.set("sem", selectedSem);
+                    url.searchParams.set("roll", selectedRoll);
+
+                    await Browser.open({ url: url.toString() });
+                } catch (e) {
+                    console.error("Browser open failed:", e);
+                    setError("Failed to open print view.");
+                }
+
+                return;
+            }
+
+            // Web
             window.print();
-        }
 
+        } catch (e) {
+            console.error("Print error:", e);
+            setError("Something went wrong while printing.");
+        }
     };
 
     /* ================= MARKSHEET META ================= */
