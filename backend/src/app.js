@@ -13,6 +13,10 @@ const facultyRoutes = require("./routes/facultyRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const marksRoutes = require("./routes/marksRoutes");
+const studentDashboardRoutes = require("./routes/studentDashboardRoutes");
+const studentProfileRoutes = require("./routes/studentProfileRoutes");
+const studentAttendanceRoutes = require("./routes/studentAttendanceRoutes");
+const studentMarksheetRoutes = require("./routes/studentMarksheetRoutes");
 
 const app = express();
 
@@ -57,5 +61,9 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/marks", marksRoutes);
+app.use("/api/student", studentDashboardRoutes);
+app.use("/api/student", studentProfileRoutes);
+app.use("/api/student", studentAttendanceRoutes);
+app.use("/api/student", studentMarksheetRoutes);
 
 module.exports = app;
