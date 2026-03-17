@@ -61,5 +61,9 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/marks", marksRoutes);
+app.use("/api/student", studentDashboardRoutes);
+app.use("/api/student", studentProfileRoutes);
+app.use("/api/student", studentAttendanceRoutes);
+app.use("/api/student", studentMarksheetRoutes);
 
 module.exports = app;
