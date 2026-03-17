@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 import api from "../../utils/api";
 import MarksheetLayout from "./MarksheetLayout";
 
@@ -227,78 +226,122 @@ const PrintMarksheet = () => {
 
     return (
 
-        <div className={isPrintMode ? "" : "space-y-10"}>
+        <div className="space-y-6 md:space-y-10 px-2 md:px-0">
 
-            {!isPrintMode && (
-                <div>
-                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-                        Student Marksheet
-                    </h2>
+            {/* HEADER */}
+            <div>
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+                    Student Marksheet
+                </h2>
 
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        Generate and download semester marksheets.
-                    </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Generate and download semester marksheets.
+                </p>
+            </div>
+
+            {/* FILTER PANEL */}
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+
+                <select
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm"
+                >
+                    <option value="">Select Course</option>
+
+                    {courses.map(course => (
+                        <option key={course.id} value={course.course_code}>
+                            {course.course_name}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={selectedSem}
+                    onChange={(e) => setSelectedSem(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm"
+                >
+                    <option value="">Select {semLabel}</option>
+
+                    {semesterOptions.map(num => (
+                        <option key={num} value={num}>
+                            {semLabel} {num}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={selectedRoll}
+                    onChange={(e) => setSelectedRoll(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm"
+                >
+                    <option value="">Select Student</option>
+
+                    {students.map(s => (
+                        <option key={s.rollnumber} value={s.rollnumber}>
+                            {s.rollnumber} - {s.firstname} {s.lastname}
+                        </option>
+                    ))}
+                </select>
+
+                <button
+                    onClick={loadMarksheet}
+                    className="w-full md:w-auto px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
+                >
+                    Load Marksheet
+                </button>
+
+            </div>
+
+            {/* ERROR */}
+            {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-md">
+                    {error}
                 </div>
             )}
 
-            {!isPrintMode && (
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)}>
-                        <option value="">Select Course</option>
-                        {courses.map(course => (
-                            <option key={course.id} value={course.course_code}>
-                                {course.course_name}
-                            </option>
-                        ))}
-                    </select>
-
-                    <select value={selectedSem} onChange={(e) => setSelectedSem(e.target.value)}>
-                        <option value="">Select {semLabel}</option>
-                        {semesterOptions.map(num => (
-                            <option key={num} value={num}>
-                                {semLabel} {num}
-                            </option>
-                        ))}
-                    </select>
-
-                    <select value={selectedRoll} onChange={(e) => setSelectedRoll(e.target.value)}>
-                        <option value="">Select Student</option>
-                        {students.map(s => (
-                            <option key={s.rollnumber} value={s.rollnumber}>
-                                {s.rollnumber} - {s.firstname} {s.lastname}
-                            </option>
-                        ))}
-                    </select>
-
-                    <button onClick={loadMarksheet}>
-                        Load Marksheet
-                    </button>
-                </div>
-            )}
-
+            {/* MARKSHEET */}
             {marksheet && (
-                <div>
-                    {!isPrintMode && (
-                        <button onClick={downloadPDF}>
+
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-3 sm:p-4 md:p-6">
+
+                    <div className="flex justify-center md:justify-end mb-4">
+                        <button
+                            onClick={downloadPDF}
+                            className="px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
+                        >
                             Download PDF
                         </button>
-                    )}
+                    </div>
 
-                    <MarksheetLayout
-                        marksheet={marksheet}
-                        semLabel={semLabel}
-                        selectedSem={selectedSem}
-                        marksheetCode={marksheetCode}
-                        verificationUrl={verificationUrl}
-                        summary={summary}
-                        hash={hash}
-                        courseDisplay={courseDisplay}
-                        getGrade={getGrade}
-                    />
+                    {/* Scroll container so mobile doesn't break layout */}
+                    <div className="w-full overflow-x-auto">
+
+                        {/* Marksheet container */}
+                        <div className="min-w-[900px] md:min-w-[900px] mx-auto">
+
+                            <MarksheetLayout
+                                marksheet={marksheet}
+                                semLabel={semLabel}
+                                selectedSem={selectedSem}
+                                marksheetCode={marksheetCode}
+                                verificationUrl={verificationUrl}
+                                summary={summary}
+                                hash={hash}
+                                courseDisplay={courseDisplay}
+                                getGrade={getGrade}
+                            />
+
+                        </div>
+
+                    </div>
+
                 </div>
+
             )}
 
         </div>
+
     );
 };
 

@@ -31,14 +31,38 @@ const ImportFacultyModal = ({ token, onClose, onImportSuccess }) => {
 
                 const reader = new FileReader();
                 reader.onload = async () => {
-                    await Filesystem.writeFile({
-                        path: "Faculty_Import_Template.xlsx",
-                        data: reader.result,
-                        directory: Directory.Documents,
-                    });
+                    const filePath = "Faculty_Import_Template.xlsx";
 
-                    setLoading(false);
-                    alert("Download complete");
+                    try {
+                        // Delete if exists
+                        try {
+                            await Filesystem.stat({
+                                path: filePath,
+                                directory: Directory.Documents,
+                            });
+
+                            await Filesystem.deleteFile({
+                                path: filePath,
+                                directory: Directory.Documents,
+                            });
+                        } catch (_) {}
+
+                        // Write file
+                        await Filesystem.writeFile({
+                            path: filePath,
+                            data: reader.result,
+                            directory: Directory.Documents,
+                            recursive: true,
+                        });
+
+                        alert("Download complete");
+
+                    } catch (err) {
+                        console.error(err);
+                        setError("Failed to save file");
+                    } finally {
+                        setLoading(false);
+                    }
                 };
 
                 reader.readAsDataURL(blob);

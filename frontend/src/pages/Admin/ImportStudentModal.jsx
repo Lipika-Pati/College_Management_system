@@ -31,21 +31,45 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                 const blob = await response.blob();
 
                 const reader = new FileReader();
+
                 reader.onload = async () => {
+                    const filePath = "Student_Import_Template.xlsx";
+
                     try {
+                        try {
+                            await Filesystem.stat({
+                                path: filePath,
+                                directory: Directory.Documents,
+                            });
+
+                            await Filesystem.deleteFile({
+                                path: filePath,
+                                directory: Directory.Documents,
+                            });
+                        } catch (_) {
+                            // if file doesn't exist -> ignore
+                        }
                         await Filesystem.writeFile({
-                            path: "Student_Import_Template.xlsx",
+                            path: filePath,
                             data: reader.result,
                             directory: Directory.Documents,
+                            recursive: true,
                         });
 
                         alert("Download complete");
+
                     } catch (e) {
                         console.error(e);
                         setError("Failed to save file.");
                     } finally {
                         setLoading(false);
                     }
+                };
+
+                reader.onerror = () => {
+                    console.error("FileReader error");
+                    setError("Failed to process file");
+                    setLoading(false);
                 };
 
                 reader.readAsDataURL(blob);
