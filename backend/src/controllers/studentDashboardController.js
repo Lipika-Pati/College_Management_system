@@ -30,3 +30,33 @@ exports.getDashboard = async (req, res) => {
   }
 
 };
+
+
+/* =========================
+   Update Password
+========================= */
+
+exports.updatePassword = async (req, res) => {
+
+  try {
+
+    const email = req.user.email;
+    const { password } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.query(
+      "UPDATE students SET password=? WHERE emailid=?",
+      [hashedPassword, email]
+    );
+
+    res.json({ message: "Password updated successfully" });
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Password update failed" });
+
+  }
+
+};
