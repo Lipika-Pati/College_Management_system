@@ -73,6 +73,12 @@ const StudentLayout = () => {
         navigate("/", { replace: true });
 
     };
+
+    /* ===================== Theme ===================== */
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === "dark" ? "light" : "dark");
+    };
     
 
         
