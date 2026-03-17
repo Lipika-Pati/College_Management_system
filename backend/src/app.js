@@ -16,6 +16,7 @@ const marksRoutes = require("./routes/marksRoutes");
 const studentDashboardRoutes = require("./routes/studentDashboardRoutes");
 const studentProfileRoutes = require("./routes/studentProfileRoutes");
 const studentAttendanceRoutes = require("./routes/studentAttendanceRoutes");
+const studentMarksheetRoutes = require("./routes/studentMarksheetRoutes");
 
 const app = express();
 
