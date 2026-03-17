@@ -188,6 +188,50 @@ const StudentLayout = () => {
 
             {/* Main Area */}
             <div className="flex-1 min-w-0 flex flex-col lg:ml-64">
+
+                {/* Header */}
+                <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 lg:px-8">
+
+                    <div className="flex items-center gap-4">
+
+                        <button
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="lg:hidden text-gray-700 dark:text-gray-300 text-xl"
+                        >
+                            ☰
+                        </button>
+
+                        <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                            Student Panel
+                        </h1>
+
+                    </div>
+
+                    <div className="flex items-center gap-6">
+
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+                        >
+
+                            {theme === "dark"
+                                ? <Sun size={20} className="text-gray-300" />
+                                : <Moon size={20} className="text-gray-700" />
+                            }
+
+                        </button>
+
+                        <button
+                            onClick={handleLogout}
+                            className="text-sm font-medium text-red-600 hover:text-red-700 hover:underline"
+                        >
+                            Logout
+                        </button>
+
+                    </div>
+
+                </header>
         </div>
     );
 
