@@ -49,4 +49,34 @@ const StudentDashboard = () => {
                     View your profile, attendance, and marks.
                 </p>
             </div>
+
+            {/* Student Information Cards */}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <DashboardCard
+                    title="Name"
+                    value={
+                        loading
+                            ? "--"
+                            : `${student.firstname || ""} ${student.lastname || ""}`
+                    }
+                />
+
+                <DashboardCard
+                    title="Roll Number"
+                    value={loading ? "--" : student.rollnumber}
+                />
+
+                <DashboardCard
+                    title="Course"
+                    value={loading ? "--" : student.Courcecode}
+                />
+
+                <DashboardCard
+                    title="Semester"
+                    value={loading ? "--" : student.semoryear}
+                />
+
+            </div>
     
