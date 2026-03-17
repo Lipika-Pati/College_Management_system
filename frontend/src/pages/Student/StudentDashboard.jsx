@@ -34,4 +34,19 @@ const StudentDashboard = () => {
         if (token) fetchStudent();
 
     }, [token]);
+
+    return (
+
+        <div className="space-y-10">
+
+            {/* Page Title */}
+
+            <div>
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+                    Student Dashboard
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    View your profile, attendance, and marks.
+                </p>
+            </div>
     
