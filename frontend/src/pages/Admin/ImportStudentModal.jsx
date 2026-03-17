@@ -51,6 +51,7 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                         } catch (_) {
                             fileExists = false;
                         }
+
                         if (fileExists) {
                             setLoading(false);
                             setShowConfirm(true);
@@ -62,7 +63,7 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                                         directory: Directory.Documents,
                                     });
                                 } catch (err) {
-                                    console.warn("Delete failed, will try overwrite");
+                                    console.warn("Delete failed, falling back to overwrite");
                                 }
 
                                 try {
@@ -115,7 +116,6 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                 return;
             }
 
-            // WEB / ELECTRON
             const response = await api.get("/api/student/template", {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: "blob"
@@ -153,13 +153,13 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                 formData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data"
+                        Authorization: `Bearer ${token}`
                     }
                 }
             );
 
             setResult(response.data);
+            setFile(null);
             onImportSuccess();
         } catch (err) {
             setError(err.response?.data?.message || "Import failed.");
@@ -216,8 +216,14 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                                 type="file"
                                 accept=".xlsx,.xls"
                                 onChange={(e) => {
-                                    setFile(e.target.files[0]);
+                                    const selectedFile = e.target.files?.[0];
+                                    if (!selectedFile) return;
+
+                                    setFile(selectedFile);
                                     setError("");
+                                    setResult(null);
+
+                                    e.target.value = null;
                                 }}
                                 className="hidden"
                             />
@@ -230,13 +236,13 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                         )}
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex flex-col sm:flex-row justify-end gap-3">
                         <button
                             onClick={handleImport}
                             disabled={!file || loading}
-                            className={`px-5 py-2 text-sm rounded-md transition ${
+                            className={`w-full sm:w-auto px-5 py-2 text-sm rounded-md transition ${
                                 !file || loading
-                                    ? "bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed"
+                                    ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                                     : "bg-gray-900 text-white hover:bg-black"
                             }`}
                         >
@@ -244,22 +250,26 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                         </button>
                     </div>
 
-                    {error && (
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                            {error}
-                        </p>
-                    )}
+                    <div className="space-y-3">
+                        {error && (
+                            <div className="w-full text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md px-3 py-2">
+                                {error}
+                            </div>
+                        )}
 
-                    {result && (
-                        <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 text-sm text-gray-700 dark:text-gray-200">
-                            <p><strong>Total Rows:</strong> {result.totalRows}</p>
-                            <p><strong>Inserted:</strong> {result.inserted}</p>
-                            <p><strong>Duplicates:</strong> {result.duplicates}</p>
-                            <p><strong>Invalid Rows:</strong> {result.invalidRows}</p>
-                        </div>
-                    )}
+                        {result && (
+                            <div className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 text-sm text-gray-700 dark:text-gray-200">
+                                <p><strong>Total Rows:</strong> {result.totalRows}</p>
+                                <p><strong>Inserted:</strong> {result.inserted}</p>
+                                <p><strong>Duplicates:</strong> {result.duplicates}</p>
+                                <p><strong>Invalid Rows:</strong> {result.invalidRows}</p>
+                            </div>
+                        )}
+                    </div>
+
                 </div>
             </div>
+
             <ConfirmSaveModal
                 show={showConfirm}
                 title="File Already Exists"
