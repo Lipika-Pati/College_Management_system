@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
 import api from "../../utils/api";
 
 const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
@@ -9,23 +11,66 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
 
     const handleDownloadTemplate = async () => {
         try {
-            const response = await api.get(
-                "/api/student/template",
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    responseType: "blob"
-                }
-            );
+            const url = `${api.defaults.baseURL}/api/student/template`;
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            // ANDROID (Capacitor)
+            if (Capacitor.isNativePlatform()) {
+                setLoading(true);
+
+                const response = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    setLoading(false);
+                    throw new Error("Download failed");
+                }
+
+                const blob = await response.blob();
+
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    try {
+                        await Filesystem.writeFile({
+                            path: "Student_Import_Template.xlsx",
+                            data: reader.result,
+                            directory: Directory.Documents,
+                        });
+
+                        alert("Download complete");
+                    } catch (e) {
+                        console.error(e);
+                        setError("Failed to save file.");
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+
+                reader.readAsDataURL(blob);
+                return;
+            }
+
+            // WEB / ELECTRON
+            const response = await api.get("/api/student/template", {
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: "blob"
+            });
+
+            const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement("a");
-            link.href = url;
+            link.href = blobUrl;
             link.setAttribute("download", "Student_Import_Template.xlsx");
             document.body.appendChild(link);
             link.click();
             link.remove();
-        } catch {
+            window.URL.revokeObjectURL(blobUrl);
+
+        } catch (err) {
+            console.error(err);
             setError("Failed to download template.");
+            setLoading(false);
         }
     };
 
@@ -90,7 +135,7 @@ const ImportStudentModal = ({ token, onClose, onImportSuccess }) => {
                             onClick={handleDownloadTemplate}
                             className="w-full sm:w-auto px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-black transition"
                         >
-                            Download Template
+                            {loading ? "Downloading..." : "Download Template"}
                         </button>
                     </div>
 
