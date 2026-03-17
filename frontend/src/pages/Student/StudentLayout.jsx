@@ -232,6 +232,17 @@ const StudentLayout = () => {
                     </div>
 
                 </header>
+
+                {/* Page Content */}
+                <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 lg:p-8 min-h-[80vh]">
+
+                        <Outlet />
+
+                    </div>
+
+                </main>
         </div>
     );
 
