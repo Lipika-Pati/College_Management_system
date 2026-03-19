@@ -30,6 +30,7 @@ import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
 import FacultyLayout from "./pages/Faculty/FacultyLayout.jsx";
 import FacultyProfile from "./pages/Faculty/FacultyProfile.jsx";
 import FacultyTakeAttendance from "./pages/Faculty/FacultyTakeAttendance";
+import FacultyEditAttendance from "./pages/Faculty/FacultyEditAttendance";
 
 import StudentDashboard from "./pages/Student/StudentDashboard";
 
@@ -138,6 +139,7 @@ function App() {
 >
     <Route path="dashboard" element={<FacultyDashboard />} />
     <Route path="take-attendance" element={<FacultyTakeAttendance />} />
+    <Route path="edit-attendance" element={<FacultyEditAttendance />} />
     <Route path="profile" element={<FacultyProfile />} />
 </Route>
 

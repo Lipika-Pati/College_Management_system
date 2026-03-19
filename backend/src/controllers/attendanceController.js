@@ -19,6 +19,25 @@ const getStudentImage = (rollnumber) => {
     return match || "default.png";
 };
 
+
+const getTodayDate = () => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+};
+
+const getUserRole = (req) => {
+    return String(
+        req.user?.role ||
+        req.user?.usertype ||
+        req.user?.userType ||
+        req.user?.type ||
+        ""
+    ).toLowerCase();
+};
+
 /* ============================================================
    GET STUDENTS FOR ATTENDANCE
 ============================================================ */
@@ -108,6 +127,16 @@ exports.saveAttendance = async (req, res) => {
     }
 
     date = String(date).slice(0, 10);   // FIXED
+
+
+    const todayDate = getTodayDate();
+    const userRole = getUserRole(req);
+
+    if (userRole === "faculty" && date !== todayDate) {
+    return res.status(403).json({
+        message: "Faculty can edit attendance only for today's date"
+    });
+   }
 
     try {
         const values = records.map(r => [

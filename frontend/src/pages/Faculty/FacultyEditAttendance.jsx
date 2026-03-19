@@ -14,22 +14,24 @@ function InfoCard({ label, value }) {
   );
 }
 
-export default function FacultyTakeAttendance() {
+export default function FacultyEditAttendance() {
   const token = localStorage.getItem("token");
 
   const [assignedSubjects, setAssignedSubjects] = useState([]);
   const [students, setStudents] = useState([]);
-  const [existingDates, setExistingDates] = useState([]);
+  const [attendanceDates, setAttendanceDates] = useState([]);
 
   const [selectedSubject, setSelectedSubject] = useState("");
-  const [markMode, setMarkMode] = useState("present");
+  const [selectedDate, setSelectedDate] = useState("");
   const [checkedStudents, setCheckedStudents] = useState({});
 
   const [loadingSubjects, setLoadingSubjects] = useState(true);
   const [loadingStudents, setLoadingStudents] = useState(false);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  
 
   const todayDate = useMemo(() => {
     const today = new Date();
@@ -71,9 +73,13 @@ export default function FacultyTakeAttendance() {
   const selectedCourse = selectedSubjectObj?.courcecode || "";
   const selectedSem = selectedSubjectObj?.semoryear || "";
 
+  const canEdit = selectedDate === todayDate;
+
   useEffect(() => {
-    if (!selectedCourse || !selectedSem) {
+    if (!selectedSubject || !selectedCourse || !selectedSem) {
       setStudents([]);
+      setAttendanceDates([]);
+      setSelectedDate("");
       setCheckedStudents({});
       return;
     }
@@ -92,7 +98,6 @@ export default function FacultyTakeAttendance() {
         );
 
         setStudents(res.data || []);
-        setCheckedStudents({});
       } catch (err) {
         console.error("Students fetch error:", err);
         setStudents([]);
@@ -103,11 +108,11 @@ export default function FacultyTakeAttendance() {
     };
 
     fetchStudents();
-  }, [selectedCourse, selectedSem, token]);
+  }, [selectedCourse, selectedSem, selectedSubject, token]);
 
   useEffect(() => {
     if (!selectedSubject || !selectedCourse || !selectedSem) {
-      setExistingDates([]);
+      setAttendanceDates([]);
       return;
     }
 
@@ -120,66 +125,107 @@ export default function FacultyTakeAttendance() {
           }
         );
 
-        setExistingDates((res.data || []).map((item) => item.date));
+        setAttendanceDates((res.data || []).map((item) => item.date));
+        setSelectedDate("");
+        setCheckedStudents({});
       } catch (err) {
-        console.error("Existing dates fetch error:", err);
-        setExistingDates([]);
+        console.error("Attendance dates fetch error:", err);
+        setAttendanceDates([]);
       }
     };
 
     fetchDates();
   }, [selectedSubject, selectedCourse, selectedSem, token]);
 
+  useEffect(() => {
+    if (
+      !selectedCourse ||
+      !selectedSem ||
+      !selectedSubject ||
+      !selectedDate ||
+      students.length === 0
+    ) {
+      return;
+    }
+
+    const loadAttendance = async () => {
+      try {
+        setLoadingAttendance(true);
+        setError("");
+        setSuccess("");
+
+        const res = await api.get(
+          `/api/attendance?subjectcode=${selectedSubject}&date=${selectedDate}&courcecode=${selectedCourse}&semoryear=${selectedSem}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const map = {};
+
+        students.forEach((student) => {
+          map[Number(student.student_id)] = false;
+        });
+
+        (res.data || []).forEach((record) => {
+          const id = Number(record.student_id);
+          const present = Number(record.present);
+          map[id] = present === 1;
+        });
+
+        setCheckedStudents(map);
+      } catch (err) {
+        console.error("Load attendance error:", err);
+        setError("Failed to load attendance.");
+      } finally {
+        setLoadingAttendance(false);
+      }
+    };
+
+    loadAttendance();
+  }, [
+    selectedCourse,
+    selectedSem,
+    selectedSubject,
+    selectedDate,
+    students,
+    token,
+    
+  ]);
+
   const toggleStudent = (id) => {
+    if (!canEdit) return;
+
     setCheckedStudents((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
   };
 
-  const saveAttendance = async () => {
-    if (!selectedSubject || !selectedCourse || !selectedSem) {
-      setError("Please select a subject.");
+ 
+
+  const updateAttendance = async () => {
+    if (!selectedSubject || !selectedCourse || !selectedSem || !selectedDate) {
+      setError("Please select subject and date.");
       return;
     }
 
-    if (existingDates.includes(todayDate)) {
-    setError("Today's attendance has already been taken for this subject.");
-
-    setTimeout(() => {
-    setSelectedSubject("");
-    setMarkMode("present");
-    setCheckedStudents({});
-    setStudents([]);
-    setExistingDates([]);
-    setError("");
-  }, 1500);
-
-  return;
-}
+    if (!canEdit) {
+      setError("Attendance can only be edited on today's date.");
+      return;
+    }
 
     try {
-      const records = students.map((student) => {
-        const isChecked = !!checkedStudents[student.student_id];
-
-        return {
-          student_id: student.student_id,
-          present:
-            markMode === "present"
-              ? isChecked
-                ? 1
-                : 0
-              : isChecked
-              ? 0
-              : 1,
-        };
-      });
+      const records = students.map((student) => ({
+        student_id: student.student_id,
+        present: checkedStudents[student.student_id] ? 1 : 0,
+      }));
 
       await api.post(
         "/api/attendance",
         {
           subjectcode: selectedSubject,
-          date: todayDate,
+          date: selectedDate,
           courcecode: selectedCourse,
           semoryear: Number(selectedSem),
           records,
@@ -189,33 +235,33 @@ export default function FacultyTakeAttendance() {
         }
       );
 
-      setSuccess("Attendance saved successfully for today.");
+      setSuccess("Attendance updated successfully.");
       setError("");
 
       setTimeout(() => {
       setSelectedSubject("");
-      setMarkMode("present");
-      setCheckedStudents({});
+      setSelectedDate("");
       setStudents([]);
-      setExistingDates([]);
+      setAttendanceDates([]);
+      setCheckedStudents({});
       setSuccess("");
       }, 600);
     } catch (err) {
-      console.error("Save attendance error:", err);
-      setError(err?.response?.data?.message || "Failed to save attendance.");
+      console.error("Update attendance error:", err);
+      setError(err?.response?.data?.message || "Failed to update attendance.");
     }
   };
 
-  const isReady = selectedSubject && selectedCourse && selectedSem;
+  const isReady = selectedSubject && selectedCourse && selectedSem && selectedDate;
 
   return (
     <div className="w-full min-h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-8 lg:p-10 space-y-8 transition-colors">
       <div>
         <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-          Take Attendance
+          Edit Attendance
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Mark today&apos;s attendance for your subject.
+          Modify today&apos;s attendance for your assigned subject.
         </p>
       </div>
 
@@ -231,11 +277,18 @@ export default function FacultyTakeAttendance() {
         </div>
       )}
 
+      {!canEdit && selectedDate && (
+        <div className="p-3 rounded-md text-sm bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+          Attendance can only be edited on today&apos;s date.
+        </div>
+      )}
+
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4">
         <select
           value={selectedSubject}
           onChange={(e) => {
             setSelectedSubject(e.target.value);
+            setSelectedDate("");
             setCheckedStudents({});
             setError("");
             setSuccess("");
@@ -255,13 +308,22 @@ export default function FacultyTakeAttendance() {
         </select>
 
         <select
-          value={markMode}
-          onChange={(e) => setMarkMode(e.target.value)}
+          value={selectedDate}
+          onChange={(e) => {
+            setSelectedDate(e.target.value);
+            setError("");
+            setSuccess("");
+          }}
           disabled={!selectedSubject}
           className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm"
         >
-          <option value="present">Mark Present</option>
-          <option value="absent">Mark Absent</option>
+          <option value="">Select Date</option>
+
+          {attendanceDates.map((date, index) => (
+            <option key={`${date}-${index}`} value={date}>
+              {date}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -269,7 +331,7 @@ export default function FacultyTakeAttendance() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <InfoCard label="Course" value={selectedCourse} />
           <InfoCard label="Semester / Year" value={selectedSem} />
-          <InfoCard label="Date" value={todayDate} />
+          <InfoCard label="Selected Date" value={selectedDate || "-"} />
         </div>
       )}
 
@@ -281,20 +343,18 @@ export default function FacultyTakeAttendance() {
                 <tr>
                   <th className="px-4 py-3">Roll No</th>
                   <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3 text-center">
-                    {markMode === "present" ? "Present" : "Absent"}
-                  </th>
+                  <th className="px-4 py-3 text-center">Present</th>
                 </tr>
               </thead>
 
               <tbody>
-                {loadingStudents ? (
+                {loadingStudents || loadingAttendance ? (
                   <tr>
                     <td
                       colSpan="3"
                       className="px-4 py-8 text-center text-gray-500 dark:text-gray-400"
                     >
-                      Loading students...
+                      Loading attendance...
                     </td>
                   </tr>
                 ) : students.length === 0 ? (
@@ -323,7 +383,8 @@ export default function FacultyTakeAttendance() {
                           type="checkbox"
                           checked={!!checkedStudents[student.student_id]}
                           onChange={() => toggleStudent(student.student_id)}
-                          className="h-4 w-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
+                          disabled={!canEdit}
+                          className="h-4 w-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </td>
                     </tr>
@@ -335,15 +396,15 @@ export default function FacultyTakeAttendance() {
 
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end">
             <button
-              onClick={saveAttendance}
-              disabled={!isReady || students.length === 0}
+              onClick={updateAttendance}
+              disabled={!isReady || students.length === 0 || !canEdit}
               className={`w-full sm:w-auto px-4 py-3 sm:py-2 text-sm rounded-md transition ${
-                isReady && students.length > 0
+                isReady && students.length > 0 && canEdit
                   ? "bg-gray-900 text-white hover:bg-black"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400"
               }`}
             >
-              Save Attendance
+              Update Attendance
             </button>
           </div>
         </div>
