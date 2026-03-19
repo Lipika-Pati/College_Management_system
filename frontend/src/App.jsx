@@ -32,6 +32,10 @@ import FacultyProfile from "./pages/Faculty/FacultyProfile.jsx";
 import FacultyTakeAttendance from "./pages/Faculty/FacultyTakeAttendance";
 
 import StudentDashboard from "./pages/Student/StudentDashboard";
+import StudentLayout from "./pages/Student/StudentLayout.jsx"
+import StudentProfile from "./pages/Student/StudentProfile";
+import StudentAttendance from "./pages/Student/StudentAttendance";
+import StudentMarksheet from "./pages/Student/StudentMarksheet";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -146,13 +150,20 @@ function App() {
 
                 {/* ===================== Student ===================== */}
                 <Route
-                    path="/student/dashboard"
+                    path="/student"
                     element={
                         <ProtectedRoute allowedRole="student">
-                            <StudentDashboard />
+                            <StudentLayout />
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route path="dashboard" element={<StudentDashboard />} />
+                    <Route path="profile" element={<StudentProfile />} />
+                    <Route path="attendance" element={<StudentAttendance />} />
+                    <Route path="marksheet" element={<StudentMarksheet />} />
+
+
+                </Route>
 
                 {/* Catch All */}
                 <Route path="*" element={<Navigate to="/" replace />} />
