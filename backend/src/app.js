@@ -13,17 +13,28 @@ const facultyRoutes = require("./routes/facultyRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const marksRoutes = require("./routes/marksRoutes");
+const studentDashboardRoutes = require("./routes/studentDashboardRoutes");
+const studentProfileRoutes = require("./routes/studentProfileRoutes");
+const studentAttendanceRoutes = require("./routes/studentAttendanceRoutes");
+const studentMarksheetRoutes = require("./routes/studentMarksheetRoutes");
 
 const app = express();
+
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+});
 
 app.use(
     cors({
         origin: function (origin, callback) {
-            if (!origin) return callback(null, true); // allow server-to-server or curl
+
+            // allow requests without origin (mobile apps, curl, etc.)
+            if (!origin) return callback(null, true);
 
             if (
                 origin.includes("vercel.app") ||
-                origin.includes("localhost")
+                origin.includes("localhost") ||
+                origin.startsWith("file://")
             ) {
                 return callback(null, true);
             }
@@ -50,5 +61,9 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/marks", marksRoutes);
+app.use("/api/student", studentDashboardRoutes);
+app.use("/api/student", studentProfileRoutes);
+app.use("/api/student", studentAttendanceRoutes);
+app.use("/api/student", studentMarksheetRoutes);
 
 module.exports = app;

@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.1.2-alpha",
   "main": "electron/main.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron": "electron .",
-    "dist": "ELECTRON=true vite build && electron-builder"
+    "dist": "ELECTRON=true vite build && electron-builder",
+    "dist:win": "ELECTRON=true vite build && electron-builder --win"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
@@ -18,12 +19,13 @@
     "@capacitor/browser": "^8.0.2",
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
+    "@capacitor/filesystem": "^8.1.2",
     "@capacitor/status-bar": "^8.0.1",
     "@react-oauth/google": "^0.13.4",
     "axios": "^1.13.5",
     "dotenv": "^17.3.1",
     "html2canvas": "^1.4.1",
-    "jspdf": "^4.2.0",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.575.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
@@ -32,6 +34,7 @@
     "vite-plugin-pwa": "^1.2.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/vite": "^4.2.0",
     "@types/react": "^19.2.7",
@@ -52,6 +55,7 @@
     "wait-on": "^9.0.4"
   },
   "build": {
+    "icon": "electron/icon.png",
     "directories": {
       "output": "release/installers"
     },
@@ -66,9 +70,15 @@
       "target": "AppImage",
       "category": "Education"
     },
+    "win": {
+      "target": "nsis",
+      "icon": "electron/icon.ico"
+    },
     "protocols": {
       "name": "CMS OAuth",
-      "schemes": ["cms"]
+      "schemes": [
+        "cms"
+      ]
     }
   }
 }
