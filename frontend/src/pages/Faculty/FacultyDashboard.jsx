@@ -47,7 +47,7 @@ export default function FacultyDashboard() {
 }, [token]);
 
   return (
-    <div className="w-full min-h-[500px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 transition-colors">
+    <div className="w-full min-h-[550px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 transition-colors">
       {/* Page Title */}
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">

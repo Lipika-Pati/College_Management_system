@@ -211,6 +211,21 @@ useEffect(() => {
           </NavLink>
 
 
+          <NavLink
+            to="/faculty/enter-marks"
+            className={({ isActive }) =>
+            [
+            "block w-full px-4 py-3 rounded-lg font-medium transition text-sm",
+            isActive
+            ? "bg-slate-900 text-white shadow-sm dark:bg-gray-700"
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
+            ].join(" ")
+  }
+            >
+            Enter Marks
+            </NavLink>
+
+
 
             <NavLink
               to="/faculty/profile"
