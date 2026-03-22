@@ -199,22 +199,44 @@ export default function FacultyMarksReport() {
           <div className="w-full overflow-x-auto">
             <table className="w-full text-[11px] sm:text-xs text-left">
               <thead className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-[10px] sm:text-xs tracking-wide">
-                <tr>
-                  <th className="sm:hidden px-2 py-2">Student</th>
+  <tr>
+    <th className="sm:hidden px-2 py-2 text-left">Student</th>
 
-                  <th className="hidden sm:table-cell px-4 py-3">Roll No</th>
-                  <th className="hidden sm:table-cell px-4 py-3">Name</th>
+    <th className="hidden sm:table-cell px-4 py-3 text-left">Roll No</th>
+    <th className="hidden sm:table-cell px-4 py-3 text-left">Name</th>
 
-                  <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Theory</th>
+    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">
+      <div className="flex flex-col">
+        <span>Theory</span>
+        <span className="text-[11px] font-semibold normal-case">
+          {selectedSubjectObj?.theorymarks ?? 0}
+        </span>
+      </div>
+    </th>
 
-                  {Number(selectedSubjectObj?.practicalmarks || 0) > 0 && (
-                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Practical</th>
-                  )}
+    {Number(selectedSubjectObj?.practicalmarks || 0) > 0 && (
+      <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">
+        <div className="flex flex-col">
+          <span>Practical</span>
+          <span className="text-[11px] font-semibold normal-case">
+            {selectedSubjectObj?.practicalmarks ?? 0}
+          </span>
+        </div>
+      </th>
+    )}
 
-                  <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Total</th>
-                  <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Grade</th>
-                </tr>
-              </thead>
+    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">
+      <div className="flex flex-col">
+        <span>Total</span>
+        <span className="text-[11px] font-semibold normal-case">
+          {Number(selectedSubjectObj?.theorymarks || 0) + Number(selectedSubjectObj?.practicalmarks || 0)}
+        </span>
+      </div>
+    </th>
+
+    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Grade</th>
+  </tr>
+</thead>
 
               <tbody>
                 {loadingReport ? (
@@ -236,49 +258,51 @@ export default function FacultyMarksReport() {
                     </td>
                   </tr>
                 ) : (
-                  reportData.map((student) => (
-                    <tr
-                      key={student.rollnumber}
-                      className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
-                    >
-                      <td className="sm:hidden px-2 py-2 dark:text-gray-200">
-                        <div className="flex flex-col leading-tight">
-                          <span className="font-medium text-xs truncate">
-                            {student.rollnumber}
-                          </span>
-                          <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
-                            {student.name}
-                          </span>
-                        </div>
-                      </td>
+                 reportData.map((student) => (
+  <tr
+    key={student.rollnumber}
+    className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+  >
+    {/* Mobile combined student column */}
+    <td className="sm:hidden px-2 py-2 dark:text-gray-200">
+      <div className="flex flex-col leading-tight">
+        <span className="font-medium text-xs truncate">
+          {student.rollnumber}
+        </span>
+        <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+          {student.name}
+        </span>
+      </div>
+    </td>
 
-                      <td className="hidden sm:table-cell px-4 py-3 dark:text-gray-200">
-                        {student.rollnumber}
-                      </td>
+    {/* Desktop separate columns */}
+    <td className="hidden sm:table-cell px-4 py-3 dark:text-gray-200">
+      {student.rollnumber}
+    </td>
 
-                      <td className="hidden sm:table-cell px-4 py-3 dark:text-gray-200 font-medium">
-                        {student.name}
-                      </td>
+    <td className="hidden sm:table-cell px-4 py-3 dark:text-gray-200 font-medium">
+      {student.name}
+    </td>
 
-                      <td className="px-2 py-2 sm:px-4 sm:py-3 text-center dark:text-gray-200">
-                        {student.theorymarks} / {student.theoryfull}
-                      </td>
+    <td className="px-2 py-2 sm:px-4 sm:py-3 text-center dark:text-gray-200">
+      {student.theorymarks}
+    </td>
 
-                      {Number(selectedSubjectObj?.practicalmarks || 0) > 0 && (
-                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-center dark:text-gray-200">
-                          {student.practicalmarks} / {student.practicalfull}
-                        </td>
-                      )}
+    {Number(selectedSubjectObj?.practicalmarks || 0) > 0 && (
+      <td className="px-2 py-2 sm:px-4 sm:py-3 text-center dark:text-gray-200">
+        {student.practicalmarks}
+      </td>
+    )}
 
-                      <td className="px-2 py-2 sm:px-4 sm:py-3 text-center font-semibold dark:text-gray-100">
-                        {student.total} / {student.maxtotal}
-                      </td>
+    <td className="px-2 py-2 sm:px-4 sm:py-3 text-center font-semibold dark:text-gray-100">
+      {student.total}
+    </td>
 
-                      <td className="px-2 py-2 sm:px-4 sm:py-3 text-center font-semibold dark:text-gray-100">
-                        {student.grade}
-                      </td>
-                    </tr>
-                  ))
+    <td className="px-2 py-2 sm:px-4 sm:py-3 text-center font-semibold dark:text-gray-100">
+      {student.grade}
+    </td>
+  </tr>
+))
                 )}
               </tbody>
             </table>
