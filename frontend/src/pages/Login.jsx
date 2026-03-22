@@ -17,6 +17,7 @@ const Login = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const isElectron =
         typeof navigator !== "undefined" &&
         navigator.userAgent.toLowerCase().includes("electron");
@@ -107,11 +108,13 @@ const Login = () => {
                 navigate("/student/dashboard", { replace: true });
             }
 
-        } catch {
+        }catch (err) {
+        if (!err.response) {
+            setError("Server unreachable. Please check your connection.");
+        } else {
             setError("Invalid email or password");
-        } finally {
-            setLoading(false);
         }
+    }
     };
 
     const handleGoogleLogin = async (credentialResponse) => {
@@ -143,9 +146,13 @@ const Login = () => {
                 navigate("/student/dashboard", { replace: true });
             }
 
-        } catch {
+        }catch (err) {
+        if (!err.response) {
+            setError("Server unreachable. Please check your connection.");
+        } else {
             setError("Google login failed");
         }
+    }
     };
 
     return (
@@ -238,10 +245,14 @@ const Login = () => {
                 <div className="mt-6 flex justify-center">
                     {isNative ? (
                         <button
-                            onClick={loginWithGoogleNative}
-                            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                            onClick={() => {
+                                setGoogleLoading(true);
+                                loginWithGoogleNative();
+                            }}
+                            disabled={googleLoading}
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 transition disabled:opacity-60"
                         >
-                            Sign in with Google
+                            {googleLoading ? "Signing you in..." : "Sign in with Google"}
                         </button>
                     ) : (
                         <GoogleLogin
