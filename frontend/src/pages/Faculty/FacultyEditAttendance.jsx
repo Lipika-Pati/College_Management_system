@@ -284,7 +284,7 @@ useEffect(() => {
           Edit Attendance
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Modify today&apos;s attendance for your assigned subject.
+          Modify today&apos;s attendance for your subject.
         </p>
       </div>
 
