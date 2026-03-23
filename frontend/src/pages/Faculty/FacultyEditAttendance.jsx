@@ -31,6 +31,7 @@ export default function FacultyEditAttendance() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [warning, setWarning] = useState("");
   
 
   const todayDate = useMemo(() => {
@@ -193,6 +194,28 @@ export default function FacultyEditAttendance() {
     
   ]);
 
+
+useEffect(() => {
+  if (!selectedDate) {
+    setWarning("");
+    return;
+  }
+
+  if (selectedDate !== todayDate) {
+    setWarning("Attendance can only be edited on today's date.");
+
+    const timer = setTimeout(() => {
+      setWarning("");
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }
+
+  setWarning("");
+}, [selectedDate, todayDate]);
+
+
+
   const toggleStudent = (id) => {
     if (!canEdit) return;
 
@@ -245,7 +268,7 @@ export default function FacultyEditAttendance() {
       setAttendanceDates([]);
       setCheckedStudents({});
       setSuccess("");
-      }, 600);
+      }, 1200);
     } catch (err) {
       console.error("Update attendance error:", err);
       setError(err?.response?.data?.message || "Failed to update attendance.");
@@ -255,13 +278,13 @@ export default function FacultyEditAttendance() {
   const isReady = selectedSubject && selectedCourse && selectedSem && selectedDate;
 
   return (
-    <div className="w-full min-h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-8 lg:p-10 space-y-8 transition-colors">
+    <div className="w-[94vw] sm:w-full min-h-[90vh] sm:min-h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 transition-colors mx-auto">
       <div>
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">
           Edit Attendance
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Modify today&apos;s attendance for your assigned subject.
+          Modify today&apos;s attendance for your subject.
         </p>
       </div>
 
@@ -277,13 +300,13 @@ export default function FacultyEditAttendance() {
         </div>
       )}
 
-      {!canEdit && selectedDate && (
-        <div className="p-3 rounded-md text-sm bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
-          Attendance can only be edited on today&apos;s date.
-        </div>
-      )}
+      {warning && (
+  <div className="p-3 rounded-md text-sm bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+    {warning}
+  </div>
+)}
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4">
         <select
           value={selectedSubject}
           onChange={(e) => {
@@ -328,7 +351,7 @@ export default function FacultyEditAttendance() {
       </div>
 
       {selectedSubjectObj && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <InfoCard label="Course" value={selectedCourse} />
           <InfoCard label="Semester / Year" value={selectedSem} />
           <InfoCard label="Selected Date" value={selectedDate || "-"} />
@@ -339,13 +362,16 @@ export default function FacultyEditAttendance() {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
           <div className="w-full overflow-x-auto">
             <table className="w-full text-xs sm:text-sm text-left">
-              <thead className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-xs tracking-wide">
-                <tr>
-                  <th className="px-4 py-3">Roll No</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3 text-center">Present</th>
-                </tr>
-              </thead>
+              <thead className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-[10px] sm:text-xs tracking-wide">
+  <tr>
+    <th className="sm:hidden px-2 py-2">Student</th>
+
+    <th className="hidden sm:table-cell px-4 py-3">Roll No</th>
+    <th className="hidden sm:table-cell px-4 py-3">Name</th>
+
+    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Present</th>
+  </tr>
+</thead>
 
               <tbody>
                 {loadingStudents || loadingAttendance ? (
@@ -368,27 +394,44 @@ export default function FacultyEditAttendance() {
                   </tr>
                 ) : (
                   students.map((student) => (
-                    <tr
-                      key={student.student_id}
-                      className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
-                    >
-                      <td className="px-4 py-3 dark:text-gray-200">
-                        {student.rollnumber}
-                      </td>
-                      <td className="px-4 py-3 dark:text-gray-200 font-medium">
-                        {student.firstname} {student.lastname}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={!!checkedStudents[student.student_id]}
-                          onChange={() => toggleStudent(student.student_id)}
-                          disabled={!canEdit}
-                          className="h-4 w-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        />
-                      </td>
-                    </tr>
-                  ))
+  <tr
+    key={student.student_id}
+    className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+  >
+    {/* Mobile student column */}
+    <td className="px-2 py-2 dark:text-gray-200 sm:hidden">
+      <div className="flex flex-col leading-tight">
+        <span className="font-medium text-xs truncate">
+          {student.rollnumber}
+        </span>
+        <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+          {student.firstname} {student.lastname}
+        </span>
+      </div>
+    </td>
+
+    {/* Desktop roll number */}
+    <td className="hidden sm:table-cell px-4 py-3 dark:text-gray-200">
+      {student.rollnumber}
+    </td>
+
+    {/* Desktop name */}
+    <td className="hidden sm:table-cell px-4 py-3 dark:text-gray-200 font-medium">
+      {student.firstname} {student.lastname}
+    </td>
+
+    {/* Common checkbox column */}
+    <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
+      <input
+        type="checkbox"
+        checked={!!checkedStudents[student.student_id]}
+        onChange={() => toggleStudent(student.student_id)}
+        disabled={!canEdit}
+        className="h-4 w-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+      />
+    </td>
+  </tr>
+))
                 )}
               </tbody>
             </table>

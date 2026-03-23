@@ -61,7 +61,7 @@ const FacultyProfile = () => {
 
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/5 dark:bg-gray-800/40 shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="p-8 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="p-4 sm:p-6 lg:p-8 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
             <img
               src={profileImg}
@@ -70,7 +70,7 @@ const FacultyProfile = () => {
                 e.target.src = `${api.defaults.baseURL}/uploads/faculties/default.png`;
               }}
               alt="Profile"
-              className="h-20 w-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm"
+              className="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm"
             />
 
             <div>
@@ -95,9 +95,9 @@ const FacultyProfile = () => {
         </div>
 
         {/* Body */}
-        <div className="p-8 space-y-8">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
           {/* Basic */}
-          <div className="bg-white/10 dark:bg-gray-800 border border-gray-200/40 dark:border-gray-700 rounded-lg p-6 shadow-sm transition-colors">
+          <div className="bg-white/10 dark:bg-gray-800 border border-gray-200/40 dark:border-gray-700 rounded-lg p-4 sm:p-6 shadow-sm transition-colors">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-6">
               Basic Information
             </h3>
@@ -184,7 +184,7 @@ const ModalWrapper = ({ title, children, onClose }) => (
       className="absolute inset-0 bg-black/50 backdrop-blur-sm"
       onClick={() => onClose(null)}
     />
-    <div className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto hide-scrollbar rounded-2xl shadow-2xl z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+    <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar rounded-xl sm:rounded-2xl shadow-2xl z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-5 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           {title}
@@ -196,7 +196,7 @@ const ModalWrapper = ({ title, children, onClose }) => (
           ×
         </button>
       </div>
-      <div className="p-6">{children}</div>
+      <div className="p-4 sm:p-6">{children}</div>
     </div>
   </div>
 );
@@ -425,11 +425,11 @@ setTimeout(() => {
   return (
     <ModalWrapper title="Edit Details" onClose={onClose}>
       {/* Picture */}
-      <div className="mb-6 flex flex-col items-center gap-3">
+      <div className="mb-5 sm:mb-6 flex flex-col items-center gap-3">
         <img
           src={preview}
           alt="Preview"
-          className="h-24 w-24 object-cover rounded-md border border-gray-200 dark:border-gray-700 shadow-sm"
+          className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md border border-gray-200 dark:border-gray-700 shadow-sm"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = `${api.defaults.baseURL}/uploads/faculties/default.png`;

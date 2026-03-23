@@ -1173,6 +1173,8 @@ exports.getAssignedSubjects = async (req, res) => {
       `SELECT
           f.subject AS subjectcode,
           s.subjectname,
+          s.theorymarks,
+          s.practicalmarks,
           f.courcecode,
           f.semoryear
        FROM faculties f

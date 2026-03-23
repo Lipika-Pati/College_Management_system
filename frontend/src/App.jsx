@@ -31,6 +31,9 @@ import FacultyLayout from "./pages/Faculty/FacultyLayout.jsx";
 import FacultyProfile from "./pages/Faculty/FacultyProfile.jsx";
 import FacultyTakeAttendance from "./pages/Faculty/FacultyTakeAttendance";
 import FacultyEditAttendance from "./pages/Faculty/FacultyEditAttendance";
+import FacultyEnterMarks from "./pages/Faculty/FacultyEnterMarks";
+import FacultyAttendanceReport from "./pages/Faculty/FacultyAttendanceReport";
+import FacultyMarksReport from "./pages/Faculty/FacultyMarksReport";
 
 import StudentDashboard from "./pages/Student/StudentDashboard";
 import StudentLayout from "./pages/Student/StudentLayout.jsx"
@@ -147,6 +150,10 @@ function App() {
     <Route path="dashboard" element={<FacultyDashboard />} />
     <Route path="take-attendance" element={<FacultyTakeAttendance />} />
     <Route path="edit-attendance" element={<FacultyEditAttendance />} />
+    <Route path="enter-marks" element={<FacultyEnterMarks />} />
+    <Route path="attendance-report" element={<FacultyAttendanceReport />} />
+    <Route path="marks-report" element={<FacultyMarksReport />} />
+    
     <Route path="profile" element={<FacultyProfile />} />
 </Route>
 
