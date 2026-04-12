@@ -205,8 +205,8 @@ const AdminLayout = () => {
     useEffect(() => {
         const checkConnectivity = async () => {
             try {
-                await fetch("https://www.google.com/favicon.ico", {
-                    method: "HEAD",
+                await fetch(`${api.defaults.baseURL}/health`, {
+                    method: "GET",
                     mode: "no-cors",
                     cache: "no-store",
                 });
