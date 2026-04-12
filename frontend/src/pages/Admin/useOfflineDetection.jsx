@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../utils/api";
 
 const useOfflineDetection = () => {
-    const [isOffline, setIsOffline] = useState(false);
+    const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
     useEffect(() => {
         const checkConnectivity = async () => {
@@ -23,6 +23,7 @@ const useOfflineDetection = () => {
         window.addEventListener("offline", handleOffline);
         window.addEventListener("online", handleOnline);
 
+        // One-time mount check for Capacitor/Electron cold start
         checkConnectivity();
 
         return () => {
