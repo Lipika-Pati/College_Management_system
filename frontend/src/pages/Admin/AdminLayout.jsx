@@ -28,7 +28,7 @@ const AdminLayout = () => {
         return saved !== null ? JSON.parse(saved) : window.innerWidth >= 1024;
     });
     const [openSections, setOpenSections] = useState({});
-    const [isOffline, setIsOffline] = useState(!navigator.onLine);
+    const [isOffline, setIsOffline] = useState(false);
     const [checking, setChecking] = useState(false);
     const [retryError, setRetryError] = useState("");
 
@@ -203,11 +203,27 @@ const AdminLayout = () => {
     ];
 
     useEffect(() => {
+        const checkConnectivity = async () => {
+            try {
+                await fetch("https://www.google.com/favicon.ico", {
+                    method: "HEAD",
+                    mode: "no-cors",
+                    cache: "no-store",
+                });
+                setIsOffline(false);
+            } catch {
+                setIsOffline(true);
+            }
+        };
+
         const handleOffline = () => setIsOffline(true);
-        const handleOnline = () => setIsOffline(false);
+        const handleOnline = () => checkConnectivity();
 
         window.addEventListener("offline", handleOffline);
         window.addEventListener("online", handleOnline);
+
+        // One-time check on mount (covers Capacitor/Electron cold start)
+        checkConnectivity();
 
         return () => {
             window.removeEventListener("offline", handleOffline);
